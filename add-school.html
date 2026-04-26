@@ -57,12 +57,62 @@ button {
 .secondary {
   background:#2196f3;
 }
+.back-btn {
+  position:absolute;
+  right:10px;
+  top:10px;
+  width:40px;
+  height:40px;
+  background:white;
+  border:none;
+  border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+  transition:0.2s;
+}
+
+.back-btn:active {
+  transform:scale(0.9);
+}
+
+.arrow {
+  border: solid #0f9d58;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 6px;
+  transform: rotate(135deg);
+}
+
+.back-btn:active {
+  transform:scale(0.9);
+}
+
+.arrow {
+  border: solid #0f9d58;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 6px;
+  transform: rotate(135deg);
+}
 </style>
 </head>
 
 <body>
 
-<header>📚 نظام إضافة المدارس</header>
+<header style="position:relative">
+
+<!-- زر الرجوع -->
+<button onclick="goBack()" class="back-btn">
+  <span class="arrow"></span>
+</button>
+
+📚 نظام إضافة المدارس
+
+</header>
 
 <!-- 📥 رفع Excel -->
 <div class="card">
@@ -82,8 +132,18 @@ button {
 </div>
 
 <div class="input-group">
-<label>رقم الهاتف</label>
-<input id="phone">
+<label>رقم الهاتف 1</label>
+<input id="phone1">
+</div>
+
+<div class="input-group">
+<label>رقم الهاتف 2</label>
+<input id="phone2">
+</div>
+
+<div class="input-group">
+<label>رقم الهاتف 3</label>
+<input id="phone3">
 </div>
 
 <div class="input-group">
@@ -159,7 +219,9 @@ window.add = async function(){
   await push(ref(db,'schools'),{
     code,
     name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
+phone1: document.getElementById("phone1").value,
+phone2: document.getElementById("phone2").value,
+phone3: document.getElementById("phone3").value,
     manager: document.getElementById("manager").value,
     students: document.getElementById("students").value,
     location: document.getElementById("location").value,
@@ -176,6 +238,9 @@ window.add = async function(){
 ////////////////////
 // 📥 رفع Excel
 ////////////////////
+window.goBack = function(){
+  location.href = "dashboard.html";
+}
 window.upload = async function(){
 
   const file = document.getElementById("file").files[0];
@@ -207,7 +272,9 @@ window.upload = async function(){
       await push(ref(db,'schools'),{
         code,
         name: row.name || "",
-        phone: String(row.phone || ""),
+phone1: String(row.phone1 || ""),
+phone2: String(row.phone2 || ""),
+phone3: String(row.phone3 || ""),
         manager: row.manager || "",
         students: row.students || "",
         location: row.location || "",
@@ -230,17 +297,19 @@ window.upload = async function(){
 ////////////////////
 window.downloadSample = function(){
 
-  const data = [
-    {
-      name: "مدرسة الأمل",
-      phone: "0770000000",
-      manager: "أحمد",
-      students: 500,
-      team: "A",
-      location: "https://maps.google.com",
-      address: "كركوك"
-    }
-  ];
+const data = [
+  {
+    name: "مدرسة الأمل",
+    phone1: "0770000000",
+    phone2: "0780000000",
+    phone3: "0750000000",
+    manager: "أحمد",
+    students: 500,
+    team: "A",
+    location: "https://maps.google.com",
+    address: "كركوك"
+  }
+];
 
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();

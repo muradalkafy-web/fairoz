@@ -130,11 +130,45 @@ button:hover {
 .deal {background:#4caf50;}
 .reject {background:#f44336;}
 .pending {background:#607d8b;}
+.back-btn {
+  position:absolute;
+  right:10px;
+  top:10px;
+  width:40px;
+  height:40px;
+  background:white;
+  border:none;
+  border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+  transition:0.2s;
+}
+
+.back-btn:active {
+  transform:scale(0.9);
+}
+
+.arrow {
+  border: solid #0f9d58;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 6px;
+  transform: rotate(135deg);
+}
 </style>
 </head>
 
 <body>
+
 <header style="position:relative">
+
+<button onclick="goBack()" class="back-btn">
+  <span class="arrow"></span>
+</button>
 📚 نظام مطبعة فيروز
 <button id="deleteBtn" onclick="handleDeleteClick()" style="
 position:absolute;
@@ -400,6 +434,9 @@ window.toggleSelect = function(id){
   }
 
   render();
+}
+window.goBack = function(){
+  location.href = "dashboard.html";
 }
 window.exportExcel = function(){
 const order = {
