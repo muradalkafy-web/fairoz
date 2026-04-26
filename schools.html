@@ -96,12 +96,27 @@ input, select {
 }
 
 button {
-  padding:7px;
+  padding:8px 12px;
   border:none;
-  border-radius:8px;
-  color:white;
-  font-size:12px;
+  border-radius:20px;
+  font-size:13px;
   cursor:pointer;
+  background:#e0e0e0;
+  color:#333;
+  transition:0.2s;
+}
+
+/* عند المرور */
+button:hover {
+  background:#0f9d58;
+  color:white;
+}
+
+/* الزر النشط */
+.active-filter {
+  background:#0f9d58 !important;
+  color:white !important;
+  font-weight:bold;
 }
 
 .call {background:#2196f3;}
@@ -127,7 +142,17 @@ button {
 
 <!-- FILTER -->
 <div class="filter">
+<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
 
+<button class="filter-btn" onclick="setStatusFilter('all')">الكل</button>
+<button class="filter-btn" onclick="setStatusFilter('new')">جديدة</button>
+<button class="filter-btn" onclick="setStatusFilter('called')">اتصال</button>
+<button class="filter-btn" onclick="setStatusFilter('visited')">زيارة</button>
+<button class="filter-btn" onclick="setStatusFilter('deal')">اتفاق</button>
+<button class="filter-btn" onclick="setStatusFilter('reject')">رفض</button>
+<button class="filter-btn" onclick="setStatusFilter('pending')">انتظار</button>
+
+</div>
 <input id="searchInput" placeholder="🔍 بحث (اسم / كود / رقم)">
 
 <select id="teamFilter">
@@ -171,7 +196,7 @@ const db = getDatabase(app);
 const params = new URLSearchParams(window.location.search);
 const selectedStatus = params.get("status");
 let dataAll = {};
-
+let currentStatus = selectedStatus || "all";
 onValue(ref(db,'schools'), (snap)=>{
   dataAll = snap.val() || {};
   render();
@@ -195,8 +220,8 @@ function render(){
 const s = dataAll[id];
 
 // 🔥 فلترة حسب الحالة (هذا المهم)
-if(selectedStatus && selectedStatus !== "all"){
-  if(s.status !== selectedStatus) continue;
+if(currentStatus !== "all"){
+  if(s.status !== currentStatus) continue;
 }
 
 let buttonsHTML = "";
@@ -268,7 +293,20 @@ if(searchClean &&
   document.getElementById("visits").innerText=visits;
   document.getElementById("deals").innerText=deals;
 }
+window.setStatusFilter = function(status){
 
+  currentStatus = status;
+
+  // إزالة التفعيل من الكل
+  document.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.classList.remove("active-filter");
+  });
+
+  // تفعيل الزر المضغوط
+  event.target.classList.add("active-filter");
+
+  render();
+}
 window.change = function(id,status){
 update(ref(db,'schools/'+id),{
   status: status,

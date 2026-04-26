@@ -5,9 +5,18 @@
 <title>تفاصيل المدرسة</title>
 
 <style>
+  textarea {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  background:#f9f9f9;
+  font-size:14px;
+  margin-bottom:10px;
+}
 body {
   margin:0;
-  font-family: Tahoma;
+  font-family:Tahoma;
   background:#f4f7f6;
 }
 
@@ -16,51 +25,72 @@ header {
   color:white;
   padding:14px;
   text-align:center;
+  font-size:18px;
 }
 
-/* CARD */
+/* CONTAINER */
 .container {padding:10px;}
 
+/* CARD */
 .card {
   background:white;
   padding:15px;
   border-radius:12px;
   margin-bottom:10px;
   box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  border-right:4px solid #0f9d58;
 }
 
-/* TEXT */
-.code {
-  color:#0f9d58;
+/* TITLE */
+.section-title {
   font-weight:bold;
-  font-size:13px;
+  margin-bottom:8px;
+  color:#0f9d58;
 }
 
+/* ROW */
+.row {
+  margin:5px 0;
+  font-size:14px;
+}
+
+/* NAME */
 .name {
-  font-size:18px;
+  font-size:20px;
   font-weight:bold;
   margin:5px 0;
 }
 
-/* ACTIONS */
-.actions a {
-  display:inline-block;
-  margin:5px;
-  padding:8px;
-  background:#2196f3;
-  color:white;
+/* STATUS */
+.status {
+  font-weight:bold;
+  padding:5px 10px;
   border-radius:8px;
-  text-decoration:none;
+  display:inline-block;
+  color:white;
 }
 
-/* INPUT */
-textarea, input {
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  border-radius:8px;
-  border:1px solid #ccc;
+.actions {
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.actions a {
+  flex:1;
+  text-align:center;
+  padding:12px;
+  font-weight:bold;
+  border-radius:10px;
+  text-decoration:none;
+  color:white;
+}
+
+.actions a:first-child {
+  background:#4caf50; /* اتصال */
+}
+
+.actions a:last-child {
+  background:#25d366; /* واتساب */
 }
 
 /* BUTTONS */
@@ -85,12 +115,55 @@ button {
 .deal {background:#4caf50;}
 .reject {background:#f44336;}
 .pending {background:#607d8b;}
+/* 🔥 INPUT احترافي */
+.input-group {
+  margin-bottom:12px;
+}
+
+.input-label {
+  font-size:12px;
+  color:#777;
+  margin-bottom:4px;
+}
+
+.input-field {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  background:#f9f9f9;
+  font-size:14px;
+  transition:0.2s;
+}
+
+.input-field:focus {
+  border-color:#0f9d58;
+  background:white;
+  outline:none;
+  box-shadow:0 0 0 2px rgba(15,157,88,0.2);
+}
 </style>
 </head>
 
 <body>
 
-<header>تفاصيل المدرسة</header>
+<header style="position:relative">
+📚 تفاصيل المدرسة
+<button onclick="toggleEdit()" id="editBtn" style="
+position:absolute;
+left:10px;
+top:10px;
+background:white;
+color:#0f9d58;
+border:none;
+padding:5px 10px;
+border-radius:8px;
+cursor:pointer;
+">
+✏️
+</button>
+
+</header>
 
 <div class="container" id="content"></div>
 
@@ -114,58 +187,110 @@ const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get("id");
 
 const refSchool = ref(db,'schools/'+id);
+let editMode = false;
+let currentData = {};
+function render(){
 
-onValue(refSchool,(snap)=>{
-  const s = snap.val();
-  if(!s) return;
+  const s = currentData;
+
+ const field = (id, label, value) => {
+  return editMode
+    ? `
+      <div class="input-group">
+        <div class="input-label">${label}</div>
+        <input class="input-field" id="${id}" value="${value || ''}">
+      </div>
+    `
+    : `
+      <div class="row"><b>${label}:</b> ${value || "-"}</div>
+    `;
+};
 
   document.getElementById("content").innerHTML = `
-    <div class="card">
-      <div class="code">${s.code || id}</div>
-      <div class="name">${s.name}</div>
 
-      <p>📞 ${s.phone}</p>
-      <p>👥 ${s.team}</p>
-      <p>📊 ${translate(s.status)}</p>
+  <div class="card">
+    <div class="section-title">📌 المعلومات</div>
+${field("nameInput","📛 اسم المدرسة", s.name)}
+${field("codeInput","🔢 الكود", s.code)}
+${field("phoneInput","📞 الهاتف", s.phone)}
+${field("managerInput","👤 المسؤول", s.manager)}
+${field("studentsInput","👥 عدد الطلاب", s.students)}
+${field("teamInput","🏢 الفريق", s.team)}
+${field("addressInput","📍 العنوان", s.address)}
+${field("locationInput","🌍 الموقع", s.location)}
 
-      <div class="actions">
-        <a href="tel:${s.phone}">📞 اتصال</a>
-        <a href="https://wa.me/964${String(s.phone).substring(1)}">💬 واتساب</a>
-        <a href="${s.location || '#'}" target="_blank">📍 الموقع</a>
-      </div>
-    </div>
+    ${editMode ? `
+<button onclick="saveAll()" style="
+background:#0f9d58;
+margin-top:10px;
+width:100%;
+padding:12px;
+font-size:15px;
+font-weight:bold;
+border-radius:10px;
+">
+💾 حفظ التعديلات
+</button>
+<button onclick="cancelEdit()" style="
+background:#777;
+margin-top:5px;
+width:100%;
+padding:10px;
+border-radius:10px;
+">
+❌ إلغاء
+</button>
+    ` : ""}
+  </div>
 
-    <div class="card">
-      <label>📝 ملاحظة</label>
-      <textarea id="noteInput" placeholder="اكتب ملاحظة..."></textarea>
+  <div class="card">
+    <textarea id="noteInput" placeholder="ملاحظة..."></textarea>
+<div class="actions">
 
-      <div class="buttons">
-        <button class="call" onclick="setStatus('called')">اتصال</button>
-        <button class="appointment" onclick="setStatus('appointment')">موعد</button>
-        <button class="visit" onclick="setStatus('visited')">زيارة</button>
-        <button class="deal" onclick="setStatus('deal')">اتفاق</button>
-        <button class="reject" onclick="setStatus('reject')">رفض</button>
-        <button class="pending" onclick="setStatus('pending')">انتظار</button>
-      </div>
-    </div>
+  <a href="tel:${s.phone}">
+    📞 اتصال
+  </a>
 
-    <div class="card">
-      <h4>📜 السجل</h4>
-      <div id="history"></div>
-    </div>
+  <a href="https://wa.me/964${(s.phone || '').replace(/^0/,'')}" target="_blank">
+    💬 واتساب
+  </a>
+
+</div>
+  <div class="buttons">
+  <button class="call" onclick="setStatus('called')">اتصال</button>
+  <button class="appointment" onclick="setStatus('appointment')">موعد</button>
+  <button class="visit" onclick="setStatus('visited')">زيارة</button>
+  <button class="deal" onclick="setStatus('deal')">اتفاق</button>
+  <button class="reject" onclick="setStatus('reject')">رفض</button>
+  <button class="pending" onclick="setStatus('pending')">انتظار</button>
+</div>
+  </div>
+
+<div class="card">
+  <div class="section-title">📜 السجل</div>
+  <div id="history"></div>
+</div>
   `;
+  let historyHtml = "";
 
-  let historyHtml="";
-  if(s.history){
-    Object.values(s.history).reverse().forEach(h=>{
-      historyHtml += `<p>• ${h.action} (${h.note}) - ${h.time}</p>`;
-    });
-  }
+if(s.history){
+  Object.values(s.history).reverse().forEach(h=>{
+    historyHtml += `<div class="row">• ${h.action} (${h.note || "-"}) - ${h.time}</div>`;
+  });
+}
 
-  document.getElementById("history").innerHTML = historyHtml;
+const el = document.getElementById("history");
+if(el) el.innerHTML = historyHtml;
+}
+onValue(refSchool,(snap)=>{
+  currentData = snap.val();
+  if(!currentData) return;
 
+  render();
 });
 
+
+// تغيير الحالة
 window.setStatus = function(status){
 
   const note = document.getElementById("noteInput").value;
@@ -181,9 +306,9 @@ window.setStatus = function(status){
   });
 
   document.getElementById("noteInput").value = "";
-
 }
 
+// ترجمة
 function translate(s){
   if(s==="new") return "جديدة";
   if(s==="called") return "تم الاتصال";
@@ -194,7 +319,46 @@ function translate(s){
   if(s==="pending") return "قيد الانتظار";
   return s;
 }
+window.saveAll = function(){
 
+  update(ref(db,'schools/'+id),{
+
+    name: document.getElementById("nameInput").value,
+    code: document.getElementById("codeInput").value,
+    phone: document.getElementById("phoneInput").value,
+    manager: document.getElementById("managerInput").value,
+    students: document.getElementById("studentsInput").value,
+    team: document.getElementById("teamInput").value,
+    address: document.getElementById("addressInput").value,
+    location: document.getElementById("locationInput").value,
+
+  });
+
+  editMode = false;
+
+  // 🔥 يرجع زر القلم
+  const btn = document.getElementById("editBtn");
+  btn.innerText = "✏️";
+
+  render();
+
+}
+window.toggleEdit = function(){
+
+  editMode = !editMode; // 🔥 يقلب الوضع
+
+  const btn = document.getElementById("editBtn");
+
+  if(btn){
+    btn.innerText = editMode ? "❌" : "✏️";
+  }
+
+  render();
+}
+window.cancelEdit = function(){
+  editMode = false;
+  render();
+}
 </script>
 
 </body>
