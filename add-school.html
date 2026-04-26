@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إضافة مدارس</title>
+
+<style>
+body {
+  font-family: Tahoma;
+  background: #f4f7f6;
+  margin:0;
+}
+
+header {
+  background:#0f9d58;
+  color:white;
+  padding:12px;
+  text-align:center;
+  font-size:18px;
+}
+
+.card {
+  background:white;
+  margin:10px;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.input-group {
+  margin-bottom:10px;
+}
+
+label {
+  font-size:13px;
+  color:#555;
+}
+
+input, select {
+  width:100%;
+  padding:10px;
+  margin-top:4px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button {
+  width:100%;
+  padding:10px;
+  background:#0f9d58;
+  color:white;
+  border:none;
+  border-radius:8px;
+  margin-top:10px;
+}
+
+.secondary {
+  background:#2196f3;
+}
+</style>
+</head>
+
+<body>
+
+<header>📚 نظام إضافة المدارس</header>
+
+<!-- 📥 رفع Excel -->
+<div class="card">
+<h3>📥 رفع Excel</h3>
+<input type="file" id="file">
+<button onclick="upload()">رفع الملف</button>
+<button class="secondary" onclick="downloadSample()">تحميل نموذج</button>
+</div>
+
+<!-- ➕ إضافة يدوي -->
+<div class="card">
+<h3>➕ إضافة مدرسة</h3>
+
+<div class="input-group">
+<label>اسم المدرسة</label>
+<input id="name">
+</div>
+
+<div class="input-group">
+<label>رقم الهاتف</label>
+<input id="phone">
+</div>
+
+<div class="input-group">
+<label>اسم المسؤول</label>
+<input id="manager">
+</div>
+
+<div class="input-group">
+<label>عدد الطلاب</label>
+<input id="students">
+</div>
+
+<div class="input-group">
+<label>رابط الموقع</label>
+<input id="location">
+</div>
+
+<div class="input-group">
+<label>العنوان</label>
+<input id="address">
+</div>
+
+<div class="input-group">
+<label>الفريق</label>
+<select id="team">
+  <option value="A">فريق A</option>
+  <option value="B">فريق B</option>
+</select>
+</div>
+
+<button onclick="add()">إضافة</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, push, get } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+// 🔒 حماية + صلاحيات
+const role = localStorage.getItem("role");
+
+if(!role){
+  location.href = "login.html";
+}
+
+if(role !== "admin"){
+  alert("❌ فقط الادمن يضيف");
+  location.href = "dashboard.html";
+}
+////////////////////
+// ➕ إضافة يدوي
+////////////////////
+window.add = async function(){
+
+  const snap = await get(ref(db,'schools'));
+  const data = snap.val() || {};
+  const count = Object.keys(data).length + 1;
+
+  const code = "S-" + String(count).padStart(3,'0');
+
+  await push(ref(db,'schools'),{
+    code,
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    manager: document.getElementById("manager").value,
+    students: document.getElementById("students").value,
+    location: document.getElementById("location").value,
+    address: document.getElementById("address").value,
+    team: document.getElementById("team").value,
+    status:"new",
+    notes:"",
+    appointment:""
+  });
+
+  alert("✅ تمت الإضافة " + code);
+}
+
+////////////////////
+// 📥 رفع Excel
+////////////////////
+window.upload = async function(){
+
+  const file = document.getElementById("file").files[0];
+
+  if(!file){
+    alert("اختار ملف");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async function(e){
+
+    const dataArr = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(dataArr, {type:'array'});
+
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sheet);
+
+    const snap = await get(ref(db,'schools'));
+    let data = snap.val() || {};
+    let count = Object.keys(data).length;
+
+    for(const row of json){
+
+      count++;
+      const code = "S-" + String(count).padStart(3,'0');
+
+      await push(ref(db,'schools'),{
+        code,
+        name: row.name || "",
+        phone: String(row.phone || ""),
+        manager: row.manager || "",
+        students: row.students || "",
+        location: row.location || "",
+        address: row.address || "",
+        team: row.team || "A",
+        status:"new",
+        notes:"",
+        appointment:""
+      });
+    }
+
+    alert("🔥 تم رفع المدارس");
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+////////////////////
+// 📥 تحميل نموذج
+////////////////////
+window.downloadSample = function(){
+
+  const data = [
+    {
+      name: "مدرسة الأمل",
+      phone: "0770000000",
+      manager: "أحمد",
+      students: 500,
+      team: "A",
+      location: "https://maps.google.com",
+      address: "كركوك"
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Schools");
+  XLSX.writeFile(wb, "schools_sample.xlsx");
+}
+
+</script>
+
+</body>
+</html>

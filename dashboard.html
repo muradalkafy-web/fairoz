@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Tahoma;
+  background:#f4f7f6;
+}
+
+header {
+  background:#0f9d58;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:18px;
+}
+
+/* GRID */
+.container {
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+
+/* CARD */
+.card {
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.card:hover {
+  transform:scale(1.05);
+}
+
+.icon {
+  font-size:30px;
+  margin-bottom:10px;
+}
+
+.title {
+  font-size:16px;
+  font-weight:bold;
+  color:#333;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+📚 Dashboard - نظام فيروز
+</header>
+
+<div class="container">
+
+<div class="card" onclick="go('schools.html')">
+    <div class="icon">📚</div>
+    <div class="title">إدارة المدارس</div>
+  </div>
+
+  <div class="card" onclick="go('add-school.html')">
+    <div class="icon">➕</div>
+    <div class="title">إضافة مدرسة</div>
+  </div>
+
+<div class="card" onclick="go('stats.html')">
+  <div class="icon">📊</div>
+  <div class="title">الإحصائيات</div>
+</div>
+<div class="card" onclick="go('users.html')">
+  <div class="icon">👥</div>
+  <div class="title">إدارة المستخدمين</div>
+</div>
+  <div class="card" onclick="logout()">
+    <div class="icon">🚪</div>
+    <div class="title">تسجيل خروج</div>
+  </div>
+
+</div>
+
+<script>
+
+// حماية الصفحة
+if(!localStorage.getItem("user")){
+  location.href="login.html";
+}
+
+function go(page){
+  location.href = page;
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  location.href="login.html";
+}
+
+</script>
+
+</body>
+</html>

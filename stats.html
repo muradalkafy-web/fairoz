@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإحصائيات</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  margin:0;
+  font-family:Tahoma;
+  background:#f4f7f6;
+}
+
+header {
+  background:#0f9d58;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:18px;
+}
+
+/* CONTAINER */
+.container {padding:10px;}
+
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  gap:10px;
+}
+
+/* CARD */
+.card {
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.big {
+  font-size:20px;
+  font-weight:bold;
+  color:#0f9d58;
+}
+
+/* FULL */
+.full {
+  margin-top:10px;
+  background:white;
+  padding:15px;
+  border-radius:12px;
+}
+
+/* COLORS */
+.green {color:#4caf50;}
+.red {color:#f44336;}
+.orange {color:#ff9800;}
+</style>
+</head>
+
+<body>
+
+<header>📊 الإحصائيات الاحترافية</header>
+
+<div class="container">
+
+<div class="grid">
+  <div class="card">📚 المدارس <div id="total" class="big">0</div></div>
+  <div class="card">☎️ اتصالات <div id="calls" class="big">0</div></div>
+  <div class="card">🚗 زيارات <div id="visits" class="big">0</div></div>
+  <div class="card">🤝 اتفاق <div id="deals" class="big green">0</div></div>
+  <div class="card">❌ رفض <div id="reject" class="big red">0</div></div>
+  <div class="card">⏳ انتظار <div id="pending" class="big orange">0</div></div>
+</div>
+
+<div class="full">
+  <h3>📈 النسب</h3>
+  <p>نجاح: <span id="successRate"></span></p>
+  <p>اتصال: <span id="callRate"></span></p>
+  <p>رفض: <span id="rejectRate"></span></p>
+</div>
+
+<div class="full">
+  <h3>📊 توزيع الحالات</h3>
+  <canvas id="pieChart"></canvas>
+</div>
+
+<div class="full">
+  <h3>📈 الأداء</h3>
+  <canvas id="barChart"></canvas>
+</div>
+
+<div class="full">
+  <h3>💡 تحليل ذكي</h3>
+  <p id="tips"></p>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, onValue } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+// 🔒 تحقق تسجيل الدخول أولاً
+if(!localStorage.getItem("user")){
+  location.href="login.html";
+}
+
+const role = localStorage.getItem("role");
+
+// 🔒 الصلاحيات
+if(role !== "admin" && role !== "accountant"){
+  location.href = "dashboard.html";
+}
+
+let pieChart, barChart;
+
+onValue(ref(db,'schools'), (snap)=>{
+
+  const data = snap.val() || {};
+
+let total=0, calls=0, visits=0, deals=0, reject=0, pending=0;
+let employees = {};
+
+  for(let id in data){
+    const s = data[id];
+
+    total++;
+
+    if(s.status==="called") calls++;
+    if(s.status==="visited") visits++;
+    if(s.status==="deal") deals++;
+    if(s.status==="reject") reject++;
+    if(s.status==="pending") pending++;
+  }
+
+  document.getElementById("total").innerText = total;
+  document.getElementById("calls").innerText = calls;
+  document.getElementById("visits").innerText = visits;
+  document.getElementById("deals").innerText = deals;
+  document.getElementById("reject").innerText = reject;
+  document.getElementById("pending").innerText = pending;
+
+  const success = total ? (deals/total*100).toFixed(1) : 0;
+  const callRate = total ? (calls/total*100).toFixed(1) : 0;
+  const rej = total ? (reject/total*100).toFixed(1) : 0;
+
+  document.getElementById("successRate").innerText = success + "%";
+  document.getElementById("callRate").innerText = callRate + "%";
+  document.getElementById("rejectRate").innerText = rej + "%";
+
+  // PIE CHART
+  if(pieChart) pieChart.destroy();
+
+  pieChart = new Chart(document.getElementById("pieChart"), {
+    type: 'pie',
+    data: {
+      labels: ['اتصال', 'زيارة', 'اتفاق', 'رفض', 'انتظار'],
+      datasets: [{
+        data: [calls, visits, deals, reject, pending],
+        backgroundColor: ['#2196f3','#9c27b0','#4caf50','#f44336','#ff9800']
+      }]
+    }
+  });
+
+  // BAR CHART
+  if(barChart) barChart.destroy();
+
+  barChart = new Chart(document.getElementById("barChart"), {
+    type: 'bar',
+    data: {
+      labels: ['اتصال', 'زيارة', 'اتفاق', 'رفض', 'انتظار'],
+      datasets: [{
+        label: 'عدد العمليات',
+        data: [calls, visits, deals, reject, pending],
+        backgroundColor: '#0f9d58'
+      }]
+    }
+  });
+
+  // تحليل ذكي
+  let tip = "";
+
+  if(rej > 40){
+    tip = "⚠️ نسبة الرفض عالية، تحتاج تحسين أسلوب الإقناع";
+  } else if(success > 20){
+    tip = "🔥 أداء ممتاز، استمر";
+  } else {
+    tip = "📈 ركز على المتابعة والزيارات";
+  }
+
+  document.getElementById("tips").innerText = tip;
+
+});
+
+</script>
+
+</body>
+</html>

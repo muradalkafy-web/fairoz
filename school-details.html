@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width">
+<title>تفاصيل المدرسة</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Tahoma;
+  background:#f4f7f6;
+}
+
+header {
+  background:#0f9d58;
+  color:white;
+  padding:14px;
+  text-align:center;
+}
+
+/* CARD */
+.container {padding:10px;}
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  border-right:4px solid #0f9d58;
+}
+
+/* TEXT */
+.code {
+  color:#0f9d58;
+  font-weight:bold;
+  font-size:13px;
+}
+
+.name {
+  font-size:18px;
+  font-weight:bold;
+  margin:5px 0;
+}
+
+/* ACTIONS */
+.actions a {
+  display:inline-block;
+  margin:5px;
+  padding:8px;
+  background:#2196f3;
+  color:white;
+  border-radius:8px;
+  text-decoration:none;
+}
+
+/* INPUT */
+textarea, input {
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+/* BUTTONS */
+.buttons {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:5px;
+  margin-top:10px;
+}
+
+button {
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+
+.call {background:#2196f3;}
+.appointment {background:#ff9800;}
+.visit {background:#9c27b0;}
+.deal {background:#4caf50;}
+.reject {background:#f44336;}
+.pending {background:#607d8b;}
+</style>
+</head>
+
+<body>
+
+<header>تفاصيل المدرسة</header>
+
+<div class="container" id="content"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, onValue, update, push } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get("id");
+
+const refSchool = ref(db,'schools/'+id);
+
+onValue(refSchool,(snap)=>{
+  const s = snap.val();
+  if(!s) return;
+
+  document.getElementById("content").innerHTML = `
+    <div class="card">
+      <div class="code">${s.code || id}</div>
+      <div class="name">${s.name}</div>
+
+      <p>📞 ${s.phone}</p>
+      <p>👥 ${s.team}</p>
+      <p>📊 ${translate(s.status)}</p>
+
+      <div class="actions">
+        <a href="tel:${s.phone}">📞 اتصال</a>
+        <a href="https://wa.me/964${String(s.phone).substring(1)}">💬 واتساب</a>
+        <a href="${s.location || '#'}" target="_blank">📍 الموقع</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>📝 ملاحظة</label>
+      <textarea id="noteInput" placeholder="اكتب ملاحظة..."></textarea>
+
+      <div class="buttons">
+        <button class="call" onclick="setStatus('called')">اتصال</button>
+        <button class="appointment" onclick="setStatus('appointment')">موعد</button>
+        <button class="visit" onclick="setStatus('visited')">زيارة</button>
+        <button class="deal" onclick="setStatus('deal')">اتفاق</button>
+        <button class="reject" onclick="setStatus('reject')">رفض</button>
+        <button class="pending" onclick="setStatus('pending')">انتظار</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>📜 السجل</h4>
+      <div id="history"></div>
+    </div>
+  `;
+
+  let historyHtml="";
+  if(s.history){
+    Object.values(s.history).reverse().forEach(h=>{
+      historyHtml += `<p>• ${h.action} (${h.note}) - ${h.time}</p>`;
+    });
+  }
+
+  document.getElementById("history").innerHTML = historyHtml;
+
+});
+
+window.setStatus = function(status){
+
+  const note = document.getElementById("noteInput").value;
+
+  update(ref(db,'schools/'+id),{
+    status: status
+  });
+
+  push(ref(db,'schools/'+id+'/history'),{
+    action: translate(status),
+    note: note,
+    time: new Date().toLocaleString()
+  });
+
+  document.getElementById("noteInput").value = "";
+
+}
+
+function translate(s){
+  if(s==="new") return "جديدة";
+  if(s==="called") return "تم الاتصال";
+  if(s==="appointment") return "موعد";
+  if(s==="visited") return "تمت الزيارة";
+  if(s==="deal") return "اتفاق";
+  if(s==="reject") return "مرفوض";
+  if(s==="pending") return "قيد الانتظار";
+  return s;
+}
+
+</script>
+
+</body>
+</html>

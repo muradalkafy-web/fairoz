@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام فيروز</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Tahoma;
+  background:#f4f7f6;
+}
+
+/* HEADER */
+header {
+  background:#0f9d58;
+  color:white;
+  padding:14px;
+  font-size:18px;
+  text-align:center;
+}
+
+/* DASHBOARD */
+.dashboard {
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  gap:10px;
+  padding:10px;
+}
+
+.box {
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* SEARCH + FILTER */
+.filter {
+  padding:10px;
+}
+
+input, select {
+  width:100%;
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+/* CARDS */
+.container {
+  padding:10px;
+}
+
+.card {
+  background:white;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  border-right:4px solid #0f9d58;
+}
+
+/* TEXT */
+.code {
+  color:#0f9d58;
+  font-weight:bold;
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.name {
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.name:hover {
+  color:#0f9d58;
+}
+
+.status {
+  font-weight:bold;
+  margin:6px 0;
+}
+
+/* BUTTONS */
+.buttons {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:5px;
+  margin-top:8px;
+}
+
+button {
+  padding:7px;
+  border:none;
+  border-radius:8px;
+  color:white;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.call {background:#2196f3;}
+.appointment {background:#ff9800;}
+.visit {background:#9c27b0;}
+.deal {background:#4caf50;}
+.reject {background:#f44336;}
+.pending {background:#607d8b;}
+</style>
+</head>
+
+<body>
+
+<header>📚 نظام مكتبة فيروز</header>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <div class="box">📊 الكل: <span id="total">0</span></div>
+  <div class="box">☎️ اتصالات: <span id="calls">0</span></div>
+  <div class="box">🚗 زيارات: <span id="visits">0</span></div>
+  <div class="box">🤝 اتفاقات: <span id="deals">0</span></div>
+</div>
+
+<!-- FILTER -->
+<div class="filter">
+
+<input id="searchInput" placeholder="🔍 بحث (اسم / كود / رقم)">
+
+<select id="teamFilter">
+  <option value="all">كل الفرق</option>
+  <option value="A">فريق A</option>
+  <option value="B">فريق B</option>
+</select>
+
+</div>
+
+<!-- LIST -->
+<div class="container" id="schoolsList"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, onValue, update } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+// 🔒 حماية + صلاحيات
+const role = localStorage.getItem("role");
+
+if(!role){
+  location.href = "login.html";
+}
+
+// 👇 هذه صفحة المدارس (operator + admin فقط)
+if(role !== "admin" && role !== "operator"){
+
+  location.href = "dashboard.html";
+}
+const db = getDatabase(app);
+
+let dataAll = {};
+
+onValue(ref(db,'schools'), (snap)=>{
+  dataAll = snap.val() || {};
+  render();
+});
+
+document.getElementById("teamFilter").onchange = render;
+document.getElementById("searchInput").oninput = render;
+
+function render(){
+
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const filter = document.getElementById("teamFilter").value;
+  const container = document.getElementById("schoolsList");
+
+  let total=0, calls=0, visits=0, deals=0;
+
+  container.innerHTML="";
+
+  for(let id in dataAll){
+const s = dataAll[id];
+
+let buttonsHTML = "";
+
+if(role === "operator"){
+  buttonsHTML = `
+    <button class="call" onclick="change('${id}','called')">اتصال</button>
+    <button class="appointment" onclick="change('${id}','appointment')">موعد</button>
+    <button class="visit" onclick="change('${id}','visited')">زيارة</button>
+  `;
+} else {
+  buttonsHTML = `
+    <button class="call" onclick="change('${id}','called')">اتصال</button>
+    <button class="appointment" onclick="change('${id}','appointment')">موعد</button>
+    <button class="visit" onclick="change('${id}','visited')">زيارة</button>
+    <button class="deal" onclick="change('${id}','deal')">اتفاق</button>
+    <button class="reject" onclick="change('${id}','reject')">رفض</button>
+    <button class="pending" onclick="change('${id}','pending')">انتظار</button>
+  `;
+}
+ // تنظيف النص
+function clean(text){
+  return String(text)
+    .toLowerCase()
+    .replace(/[\s\-]/g,'') // يشيل المسافات والـ -
+}
+
+// القيم
+const name = clean(s.name);
+const code = clean(s.code);
+const phone = clean(s.phone);
+const searchClean = clean(search);
+
+// البحث الذكي
+if(searchClean &&
+   !name.includes(searchClean) &&
+   !code.includes(searchClean) &&
+   !phone.includes(searchClean)
+) continue;
+
+    if(filter !== "all" && s.team !== filter) continue;
+
+    total++;
+
+    if(s.status==="called") calls++;
+    if(s.status==="visited") visits++;
+    if(s.status==="deal") deals++;
+
+    container.innerHTML += `
+    <div class="card">
+
+      <div class="code">${s.code ? s.code : id}</div>
+
+      <div class="name" onclick="openDetails('${id}')">
+        ${s.name}
+      </div>
+
+      <div>📞 ${s.phone}</div>
+      <div>👥 ${s.team}</div>
+      <div class="status">📊 ${translate(s.status)}</div>
+<div class="buttons">
+  ${buttonsHTML}
+</div>
+    `;
+  }
+
+  document.getElementById("total").innerText=total;
+  document.getElementById("calls").innerText=calls;
+  document.getElementById("visits").innerText=visits;
+  document.getElementById("deals").innerText=deals;
+}
+
+window.change = function(id,status){
+update(ref(db,'schools/'+id),{
+  status: status,
+  lastUser: localStorage.getItem("user")
+});
+}
+
+window.openDetails = function(id){
+  location.href = "school-details.html?id=" + id;
+}
+
+function translate(s){
+  if(s==="new") return "جديدة";
+  if(s==="called") return "تم الاتصال";
+  if(s==="appointment") return "موعد";
+  if(s==="visited") return "تمت الزيارة";
+  if(s==="deal") return "اتفاق";
+  if(s==="reject") return "مرفوض";
+  if(s==="pending") return "قيد الانتظار";
+  return s;
+}
+
+</script>
+
+</body>
+</html>

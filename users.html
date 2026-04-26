@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المستخدمين</title>
+
+<style>
+body {margin:0;font-family:Tahoma;background:#f4f7f6;}
+
+header {
+  background:#0f9d58;color:white;padding:15px;text-align:center;font-size:18px;
+}
+
+.container {padding:10px;}
+
+.card {
+  background:white;padding:15px;border-radius:12px;margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+input, select {
+  width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;
+}
+
+button {
+  width:100%;padding:10px;background:#0f9d58;color:white;border:none;
+  border-radius:8px;margin-top:5px;cursor:pointer;
+}
+
+.delete {background:#f44336;}
+.edit {background:#2196f3;}
+
+.user {
+  border-bottom:1px solid #eee;padding:10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<header>👥 إدارة المستخدمين</header>
+
+<div class="container">
+
+<!-- إضافة مستخدم -->
+<div class="card">
+<h3>➕ إضافة مستخدم</h3>
+
+<input id="username" placeholder="اسم المستخدم">
+<input id="password" placeholder="كلمة المرور">
+
+<select id="role">
+  <option value="admin">Admin</option>
+  <option value="accountant">محاسب</option>
+  <option value="operator">مثبت</option>
+</select>
+
+<button onclick="addUser()">إضافة</button>
+</div>
+
+<!-- قائمة المستخدمين -->
+<div class="card">
+<h3>📋 المستخدمين</h3>
+<div id="list"></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, update } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 🔒 فقط الادمن يدخل
+if(localStorage.getItem("role") !== "admin"){
+  location.href="dashboard.html";
+}
+
+// عرض المستخدمين
+onValue(ref(db,'users'), snap=>{
+  const data = snap.val() || {};
+  let html = "";
+
+  for(let id in data){
+    const u = data[id];
+
+    html += `
+    <div class="user">
+      <b>${u.username}</b> - ${u.role}
+
+      <input id="pass-${id}" placeholder="كلمة سر جديدة">
+
+      <button class="edit" onclick="changePass('${id}')">تغيير كلمة السر</button>
+      <button class="delete" onclick="deleteUser('${id}')">حذف</button>
+    </div>
+    `;
+  }
+
+  document.getElementById("list").innerHTML = html;
+});
+
+// إضافة مستخدم
+window.addUser = function(){
+
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+
+  if(!username || !password){
+    alert("املأ الحقول");
+    return;
+  }
+
+  push(ref(db,'users'),{
+    username,
+    password,
+    role
+  });
+
+  alert("تمت الإضافة");
+}
+
+// حذف
+window.deleteUser = function(id){
+  if(confirm("متأكد؟")){
+    remove(ref(db,'users/'+id));
+  }
+}
+
+// تغيير كلمة السر
+window.changePass = function(id){
+
+  const newPass = document.getElementById("pass-"+id).value;
+
+  if(!newPass){
+    alert("اكتب كلمة سر");
+    return;
+  }
+
+  update(ref(db,'users/'+id),{
+    password: newPass
+  });
+
+  alert("تم التغيير");
+}
+
+</script>
+
+</body>
+</html>

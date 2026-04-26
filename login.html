@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Tahoma;
+
+  background: linear-gradient(rgba(15,157,88,0.9), rgba(76,175,80,0.9)),
+              url('logo.png') no-repeat top center;
+
+  background-size: 200px;
+  background-attachment: fixed;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+/* CARD */
+.box {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  padding:25px;
+  border-radius:15px;
+  width:90%;
+  max-width:320px;
+
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.3);
+}
+
+/* LOGO */
+.logo {
+  font-size:20px;
+  font-weight:bold;
+  color:white;
+  margin-bottom:15px;
+}
+
+/* INPUT */
+input {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  font-size:14px;
+
+  background: rgba(255,255,255,0.2);
+  color:white;
+}
+
+input::placeholder {
+  color:#eee;
+}
+
+/* BUTTON */
+button {
+  width:100%;
+  padding:12px;
+  background:#0f9d58;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#0c7c45;
+}
+
+/* ERROR */
+.error {
+  color:#ffdddd;
+  font-size:13px;
+  margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="logo">📚 نظام فيروز</div>
+
+<input id="name" placeholder="اسم المستخدم">
+<input id="password" type="password" placeholder="كلمة المرور">
+
+<button onclick="login()">دخول</button>
+
+<div id="error" class="error"></div>
+
+</div>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, get, push } 
+from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "firoz-system.firebaseapp.com",
+  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+  projectId: "firoz-system"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 🔥 إنشاء admin تلقائي
+async function createAdminIfNotExists(){
+
+  const snap = await get(ref(db,'users'));
+
+  if(!snap.exists()){
+    await push(ref(db,'users'),{
+      username: "admin",
+      password: "1234",
+      role: "admin"
+    });
+
+    console.log("✅ تم إنشاء admin");
+  }
+}
+
+// 👇 شغله بعد ما تجهز Firebase
+createAdminIfNotExists();
+
+// 🔁 إذا مسجل مسبقاً
+if(localStorage.getItem("user")){
+  location.href = "dashboard.html";
+}
+
+// 🔐 تسجيل الدخول
+window.login = async function(){
+
+  const username = document.getElementById("name").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!username || !password){
+    showError("املأ كل الحقول");
+    return;
+  }
+
+  const snap = await get(ref(db,'users'));
+
+  if(!snap.exists()){
+    showError("لا يوجد مستخدمين");
+    return;
+  }
+
+  let foundUser = null;
+
+  Object.values(snap.val()).forEach(u=>{
+    if(u.username === username && u.password === password){
+      foundUser = u;
+    }
+  });
+
+  if(!foundUser){
+    showError("اسم المستخدم أو كلمة المرور خطأ");
+    return;
+  }
+
+  localStorage.setItem("user", foundUser.username);
+  localStorage.setItem("role", foundUser.role);
+
+  location.href="dashboard.html";
+}
+
+// Enter
+document.addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    login();
+  }
+});
+
+function showError(msg){
+  document.getElementById("error").innerText = msg;
+}
+
+</script>
