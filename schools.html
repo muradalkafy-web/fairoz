@@ -264,27 +264,7 @@ if(currentStatus !== "all"){
 
 let buttonsHTML = "";
 
-if(role === "operator"){
-  buttonsHTML = `
-    <button class="call" onclick="event.stopPropagation(); change('${id}','called')">اتصال</button>
-    <button class="appointment" onclick="change('${id}','appointment')">موعد</button>
-    <button class="visit" onclick="change('${id}','visited')">زيارة</button>
-  `;
-} else {
-buttonsHTML = `
-<button class="call" onclick="event.stopPropagation(); change('${id}','called')">اتصال</button>
 
-<button class="appointment" onclick="event.stopPropagation(); change('${id}','appointment')">موعد</button>
-
-<button class="visit" onclick="event.stopPropagation(); change('${id}','visited')">زيارة</button>
-
-<button class="deal" onclick="event.stopPropagation(); change('${id}','deal')">اتفاق</button>
-
-<button class="reject" onclick="event.stopPropagation(); change('${id}','reject')">رفض</button>
-
-<button class="pending" onclick="event.stopPropagation(); change('${id}','pending')">انتظار</button>
-`;
-}
  // تنظيف النص
 function clean(text){
   return String(text)

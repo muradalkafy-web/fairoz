@@ -8,15 +8,18 @@
 body {
   margin:0;
   font-family: Tahoma;
-  background:#f4f7f6;
+  background: linear-gradient(135deg,#e8f5e9,#f4f7f6);
 }
 
+/* HEADER */
 header {
-  background:#0f9d58;
+  background: linear-gradient(135deg,#0f9d58,#4caf50);
   color:white;
   padding:15px;
   text-align:center;
   font-size:18px;
+  font-weight:bold;
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
 }
 
 /* GRID */
@@ -29,28 +32,50 @@ header {
 
 /* CARD */
 .card {
-  background:white;
-  padding:20px;
-  border-radius:15px;
+  background: linear-gradient(135deg,#d4edda,#a8e6a3);
+  padding:25px;
+  border-radius:20px;
   text-align:center;
-  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
   cursor:pointer;
-  transition:0.2s;
+  transition: all 0.3s ease;
+  position:relative;
+  overflow:hidden;
 }
 
+/* لمعة خفيفة */
+.card::before {
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background: linear-gradient(120deg,transparent,rgba(255,255,255,0.5),transparent);
+  transition:0.5s;
+}
+
+.card:hover::before {
+  left:100%;
+}
+
+/* حركة hover */
 .card:hover {
-  transform:scale(1.05);
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:0 12px 25px rgba(0,0,0,0.25);
 }
 
+/* ICON */
 .icon {
-  font-size:30px;
+  font-size:35px;
   margin-bottom:10px;
 }
 
+/* TITLE */
 .title {
-  font-size:16px;
+  font-size:17px;
   font-weight:bold;
-  color:#333;
+  color:#1b5e20;
 }
 </style>
 </head>
