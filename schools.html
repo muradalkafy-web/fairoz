@@ -6,6 +6,11 @@
 <title>نظام فيروز</title>
 
 <style>
+.selected-card {
+  background: #c8f7c5 !important; /* أخضر واضح */
+  border: 2px solid #28a745;
+  box-shadow: 0 0 10px rgba(40,167,69,0.5);
+}
 body {
   margin:0;
   font-family: Tahoma;
@@ -129,9 +134,39 @@ button:hover {
 </head>
 
 <body>
+<header style="position:relative">
+📚 نظام مطبعة فيروز
+<button id="deleteBtn" onclick="handleDeleteClick()" style="
+position:absolute;
+left:10px;
+top:10px;
+background:#f44336;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:8px;
+font-size:13px;
+cursor:pointer;
+display:none;
+">
+🗑️
+</button>
 
-<header>📚 نظام مكتبة فيروز</header>
-
+</header>
+<button onclick="exportExcel()" style="
+margin:10px;
+width:90%;
+padding:12px;
+background:#4caf50;
+color:white;
+border:none;
+border-radius:10px;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+">
+📥 تحميل Excel
+</button>
 <!-- DASHBOARD -->
 <div class="dashboard">
   <div class="box">📊 الكل: <span id="total">0</span></div>
@@ -140,13 +175,14 @@ button:hover {
   <div class="box">🤝 اتفاقات: <span id="deals">0</span></div>
 </div>
 
-<!-- FILTER -->
+
 <div class="filter">
 <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
 
 <button class="filter-btn" onclick="setStatusFilter('all')">الكل</button>
 <button class="filter-btn" onclick="setStatusFilter('new')">جديدة</button>
 <button class="filter-btn" onclick="setStatusFilter('called')">اتصال</button>
+<button class="filter-btn" onclick="setStatusFilter('appointment')">موعد</button>
 <button class="filter-btn" onclick="setStatusFilter('visited')">زيارة</button>
 <button class="filter-btn" onclick="setStatusFilter('deal')">اتفاق</button>
 <button class="filter-btn" onclick="setStatusFilter('reject')">رفض</button>
@@ -165,11 +201,11 @@ button:hover {
 
 <!-- LIST -->
 <div class="container" id="schoolsList"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, onValue, update } 
+import { getDatabase, ref, onValue, update, push } 
 from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -196,6 +232,8 @@ const db = getDatabase(app);
 const params = new URLSearchParams(window.location.search);
 const selectedStatus = params.get("status");
 let dataAll = {};
+let selected = [];
+let deleteMode = false;
 let currentStatus = selectedStatus || "all";
 onValue(ref(db,'schools'), (snap)=>{
   dataAll = snap.val() || {};
@@ -211,14 +249,14 @@ function render(){
   const filter = document.getElementById("teamFilter").value;
   const container = document.getElementById("schoolsList");
 
-  let total=0, calls=0, visits=0, deals=0;
+let total=0, calls=0, visits=0, deals=0, appointments=0;
 
   container.innerHTML="";
 
   for(let id in dataAll){
     
 const s = dataAll[id];
-
+if(s.deleted) continue;
 // 🔥 فلترة حسب الحالة (هذا المهم)
 if(currentStatus !== "all"){
   if(s.status !== currentStatus) continue;
@@ -228,19 +266,24 @@ let buttonsHTML = "";
 
 if(role === "operator"){
   buttonsHTML = `
-    <button class="call" onclick="change('${id}','called')">اتصال</button>
+    <button class="call" onclick="event.stopPropagation(); change('${id}','called')">اتصال</button>
     <button class="appointment" onclick="change('${id}','appointment')">موعد</button>
     <button class="visit" onclick="change('${id}','visited')">زيارة</button>
   `;
 } else {
-  buttonsHTML = `
-    <button class="call" onclick="change('${id}','called')">اتصال</button>
-    <button class="appointment" onclick="change('${id}','appointment')">موعد</button>
-    <button class="visit" onclick="change('${id}','visited')">زيارة</button>
-    <button class="deal" onclick="change('${id}','deal')">اتفاق</button>
-    <button class="reject" onclick="change('${id}','reject')">رفض</button>
-    <button class="pending" onclick="change('${id}','pending')">انتظار</button>
-  `;
+buttonsHTML = `
+<button class="call" onclick="event.stopPropagation(); change('${id}','called')">اتصال</button>
+
+<button class="appointment" onclick="event.stopPropagation(); change('${id}','appointment')">موعد</button>
+
+<button class="visit" onclick="event.stopPropagation(); change('${id}','visited')">زيارة</button>
+
+<button class="deal" onclick="event.stopPropagation(); change('${id}','deal')">اتفاق</button>
+
+<button class="reject" onclick="event.stopPropagation(); change('${id}','reject')">رفض</button>
+
+<button class="pending" onclick="event.stopPropagation(); change('${id}','pending')">انتظار</button>
+`;
 }
  // تنظيف النص
 function clean(text){
@@ -267,22 +310,23 @@ if(searchClean &&
     total++;
 
     if(s.status==="called") calls++;
+    if(s.status==="appointment") appointments++;
     if(s.status==="visited") visits++;
     if(s.status==="deal") deals++;
 
     container.innerHTML += `
-    <div class="card">
-
+   <div class="card ${selected.includes(id) ? 'selected-card' : ''}" 
+onclick="handleCardClick('${id}')">
       <div class="code">${s.code ? s.code : id}</div>
 
-      <div class="name" onclick="openDetails('${id}')">
+  <div class="name"onclick="event.stopPropagation(); handleCardClick('${id}')">
         ${s.name}
       </div>
 
       <div>📞 ${s.phone}</div>
       <div>👥 ${s.team}</div>
       <div class="status">📊 ${translate(s.status)}</div>
-<div class="buttons">
+<div class="buttons" onclick="event.stopPropagation()">
   ${buttonsHTML}
 </div>
     `;
@@ -292,6 +336,13 @@ if(searchClean &&
   document.getElementById("calls").innerText=calls;
   document.getElementById("visits").innerText=visits;
   document.getElementById("deals").innerText=deals;
+// 🔥 التحكم بزر الحذف
+const btn = document.getElementById("deleteBtn");
+
+if(btn){
+  btn.style.display = "block"; // دائماً ظاهر
+  btn.style.background = deleteMode ? "#000" : "#f44336";
+}
 }
 window.setStatusFilter = function(status){
 
@@ -307,13 +358,36 @@ window.setStatusFilter = function(status){
 
   render();
 }
-window.change = function(id,status){
-update(ref(db,'schools/'+id),{
-  status: status,
-  lastUser: localStorage.getItem("user")
-});
-}
+window.handleDeleteClick = function(){
 
+  // 🔥 أول ضغطة → دخول وضع التحديد
+  if(!deleteMode){
+    deleteMode = true;
+    render();
+    return;
+  }
+
+  // 🔥 داخل وضع التحديد وماكو تحديد → إلغاء
+  if(selected.length === 0){
+    deleteMode = false;
+    render();
+    return;
+  }
+
+  // 🔥 داخل وضع التحديد وعندك عناصر → حذف
+  if(!confirm("متأكد تريد تحذف؟")) return;
+
+  selected.forEach(id=>{
+    update(ref(db,'schools/'+id),{
+      deleted: true
+    });
+  });
+
+  selected = [];
+  deleteMode = false;
+
+  render();
+}
 window.openDetails = function(id){
   location.href = "school-details.html?id=" + id;
 }
@@ -328,7 +402,113 @@ function translate(s){
   if(s==="pending") return "قيد الانتظار";
   return s;
 }
+window.handleCardClick = function(id){
 
+  if(deleteMode){
+    toggleSelect(id);
+  } else {
+    openDetails(id);
+  }
+
+}
+window.toggleSelect = function(id){
+
+  if(selected.includes(id)){
+    selected = selected.filter(x => x !== id);
+  } else {
+    selected.push(id);
+  }
+
+  render();
+}
+window.exportExcel = function(){
+const order = {
+  new: 1,
+  called: 2,
+  appointment: 3,
+  visited: 4,
+  deal: 5,
+  reject: 6,
+  pending: 7
+};
+  let rows = [];
+
+for(let id in dataAll){
+
+const s = dataAll[id];
+
+// 🔥 هنا بالضبط
+if(s.deleted) continue;
+
+    // 🔥 تحويل السجل إلى نص
+    let historyText = "";
+
+    if(s.history){
+      Object.values(s.history).forEach(h=>{
+        historyText += `${h.time} - ${h.user} - ${h.action}\n`;
+      });
+    }
+
+    rows.push({
+        "_order": order[s.status] || 99,
+      "الكود": s.code || id,
+      "اسم المدرسة": s.name || "",
+      "رقم الهاتف": s.phone || "",
+      "المسؤول": s.manager || "",
+      "عدد الطلاب": s.students || "",
+      "الفريق": s.team || "",
+      "العنوان": s.address || "",
+      "الموقع": s.location || "",
+      "الحالة": translate(s.status),
+      "السجل الكامل": historyText
+    });
+
+  }
+rows.sort((a, b) => a._order - b._order);
+rows = rows.map(r => {
+  delete r._order;
+  return r;
+});
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  ws['!cols'] = [
+    {wch:10},{wch:20},{wch:15},{wch:20},
+    {wch:10},{wch:10},{wch:25},{wch:25},
+    {wch:15},{wch:80}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "المدارس");
+
+  XLSX.writeFile(wb, "schools.xlsx");
+}
+
+window.deleteSelected = function(){
+
+  // 🔥 لازم يكون داخل وضع الحذف
+  if(!deleteMode){
+    alert("فعّل وضع الحذف أولاً");
+    return;
+  }
+
+  if(selected.length === 0){
+    alert("ماكو تحديد");
+    return;
+  }
+
+  if(!confirm("متأكد تريد تحذف؟")) return;
+
+  selected.forEach(id=>{
+    update(ref(db,'schools/'+id),{
+      deleted: true
+    });
+  });
+
+  selected = [];
+  deleteMode = false;
+
+  render();
+}
 </script>
 
 </body>
