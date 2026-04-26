@@ -5,6 +5,38 @@
 <title>تفاصيل المدرسة</title>
 
 <style>
+  .whatsapp-action {
+  background: #25d366 !important;
+  color: white;
+  font-weight: bold;
+}
+
+.whatsapp-action:hover {
+  background: #1ebe5d !important;
+}
+  .whatsapp-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 55px;
+  height: 55px;
+  background: #25d366;
+  color: white;
+  font-size: 28px;
+  border-radius: 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  z-index:1000;
+  transition:0.3s;
+}
+
+.whatsapp-btn:hover {
+  transform: scale(1.1);
+  background:#1ebe5d;
+}
   textarea {
   width:100%;
   padding:10px;
@@ -145,9 +177,9 @@ button {
 </style>
 </head>
 
-<body>
 
 <header style="position:relative">
+
 📚 تفاصيل المدرسة
 <button onclick="toggleEdit()" id="editBtn" style="
 position:absolute;
@@ -251,9 +283,15 @@ border-radius:10px;
     📞 اتصال
   </a>
 
-  <a href="https://wa.me/964${(s.phone || '').replace(/^0/,'')}" target="_blank">
-    💬 واتساب
+ <a href="https://wa.me/964${(s.phone || '').replace(/^0/,'')}" target="_blank" class="whatsapp-action">
+  💬 واتساب
+</a>
+
+  <a href="${s.location || '#'}" target="_blank" style="background:#ff9800">
+    🌍 الموقع
   </a>
+
+</div>
 
 </div>
   <div class="buttons">
