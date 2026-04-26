@@ -168,7 +168,8 @@ if(role !== "admin" && role !== "operator"){
   location.href = "dashboard.html";
 }
 const db = getDatabase(app);
-
+const params = new URLSearchParams(window.location.search);
+const selectedStatus = params.get("status");
 let dataAll = {};
 
 onValue(ref(db,'schools'), (snap)=>{
@@ -190,7 +191,13 @@ function render(){
   container.innerHTML="";
 
   for(let id in dataAll){
+    
 const s = dataAll[id];
+
+// 🔥 فلترة حسب الحالة (هذا المهم)
+if(selectedStatus && selectedStatus !== "all"){
+  if(s.status !== selectedStatus) continue;
+}
 
 let buttonsHTML = "";
 

@@ -7,11 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  margin:0;
-  font-family:Tahoma;
-  background:#f4f7f6;
-}
+body {margin:0;font-family:Tahoma;background:#f4f7f6;}
 
 header {
   background:#0f9d58;
@@ -21,32 +17,27 @@ header {
   font-size:18px;
 }
 
-/* CONTAINER */
 .container {padding:10px;}
 
-/* GRID */
 .grid {
   display:grid;
   grid-template-columns: repeat(2,1fr);
   gap:10px;
 }
 
-/* CARD */
 .card {
   background:white;
   padding:15px;
   border-radius:12px;
   text-align:center;
   box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  cursor:pointer;
+  transition:0.2s;
 }
+.card:hover {transform:scale(1.05);}
 
-.big {
-  font-size:20px;
-  font-weight:bold;
-  color:#0f9d58;
-}
+.big {font-size:20px;font-weight:bold;color:#0f9d58;}
 
-/* FULL */
 .full {
   margin-top:10px;
   background:white;
@@ -54,7 +45,6 @@ header {
   border-radius:12px;
 }
 
-/* COLORS */
 .green {color:#4caf50;}
 .red {color:#f44336;}
 .orange {color:#ff9800;}
@@ -67,15 +57,17 @@ header {
 
 <div class="container">
 
+<!-- 🔢 الإحصائيات الأساسية -->
 <div class="grid">
-  <div class="card">📚 المدارس <div id="total" class="big">0</div></div>
-  <div class="card">☎️ اتصالات <div id="calls" class="big">0</div></div>
-  <div class="card">🚗 زيارات <div id="visits" class="big">0</div></div>
-  <div class="card">🤝 اتفاق <div id="deals" class="big green">0</div></div>
-  <div class="card">❌ رفض <div id="reject" class="big red">0</div></div>
-  <div class="card">⏳ انتظار <div id="pending" class="big orange">0</div></div>
+  <div class="card" onclick="openList('all')">📚 المدارس <div id="total" class="big">0</div></div>
+  <div class="card" onclick="openList('called')">☎️ اتصالات <div id="calls" class="big">0</div></div>
+  <div class="card" onclick="openList('visited')">🚗 زيارات <div id="visits" class="big">0</div></div>
+  <div class="card" onclick="openList('deal')">🤝 اتفاق <div id="deals" class="big green">0</div></div>
+  <div class="card" onclick="openList('reject')">❌ رفض <div id="reject" class="big red">0</div></div>
+  <div class="card" onclick="openList('pending')">⏳ انتظار <div id="pending" class="big orange">0</div></div>
 </div>
 
+<!-- 📈 النسب -->
 <div class="full">
   <h3>📈 النسب</h3>
   <p>نجاح: <span id="successRate"></span></p>
@@ -83,6 +75,14 @@ header {
   <p>رفض: <span id="rejectRate"></span></p>
 </div>
 
+<!-- 🧠 إحصائيات ذكية -->
+<div class="full">
+  <h3>🧠 إحصائيات متقدمة</h3>
+  <p>🏫 أكبر مدرسة: <span id="topSchool"></span></p>
+  <p>👥 أكثر فريق نشاط: <span id="topTeam"></span></p>
+</div>
+
+<!-- 📊 charts -->
 <div class="full">
   <h3>📊 توزيع الحالات</h3>
   <canvas id="pieChart"></canvas>
@@ -94,7 +94,7 @@ header {
 </div>
 
 <div class="full">
-  <h3>💡 تحليل ذكي</h3>
+  <h3>💡 تحليل</h3>
   <p id="tips"></p>
 </div>
 
@@ -115,26 +115,28 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-// 🔒 تحقق تسجيل الدخول أولاً
-if(!localStorage.getItem("user")){
-  location.href="index.html";
-}
 
+// 🔒 حماية
+if(!localStorage.getItem("user")) location.href="index.html";
 const role = localStorage.getItem("role");
-
-// 🔒 الصلاحيات
 if(role !== "admin" && role !== "accountant"){
-  location.href = "dashboard.html";
+  location.href="dashboard.html";
 }
 
 let pieChart, barChart;
+
+window.openList = function(status){
+  location.href = "schools.html?status=" + status;
+}
 
 onValue(ref(db,'schools'), (snap)=>{
 
   const data = snap.val() || {};
 
-let total=0, calls=0, visits=0, deals=0, reject=0, pending=0;
-let employees = {};
+  let total=0, calls=0, visits=0, deals=0, reject=0, pending=0;
+
+  let topSchool = {name:"-", students:0};
+  let teams = {};
 
   for(let id in data){
     const s = data[id];
@@ -146,6 +148,26 @@ let employees = {};
     if(s.status==="deal") deals++;
     if(s.status==="reject") reject++;
     if(s.status==="pending") pending++;
+
+    // 🔥 أكبر مدرسة
+    const students = Number(s.students || 0);
+    if(students > topSchool.students){
+      topSchool = {name: s.name, students};
+    }
+
+    // 🔥 نشاط الفرق
+    if(!teams[s.team]) teams[s.team]=0;
+    teams[s.team]++;
+  }
+
+  // أفضل فريق
+  let topTeam = "-";
+  let max = 0;
+  for(let t in teams){
+    if(teams[t] > max){
+      max = teams[t];
+      topTeam = t;
+    }
   }
 
   document.getElementById("total").innerText = total;
@@ -155,6 +177,9 @@ let employees = {};
   document.getElementById("reject").innerText = reject;
   document.getElementById("pending").innerText = pending;
 
+  document.getElementById("topSchool").innerText = topSchool.name + " ("+topSchool.students+")";
+  document.getElementById("topTeam").innerText = topTeam;
+
   const success = total ? (deals/total*100).toFixed(1) : 0;
   const callRate = total ? (calls/total*100).toFixed(1) : 0;
   const rej = total ? (reject/total*100).toFixed(1) : 0;
@@ -163,13 +188,11 @@ let employees = {};
   document.getElementById("callRate").innerText = callRate + "%";
   document.getElementById("rejectRate").innerText = rej + "%";
 
-  // PIE CHART
   if(pieChart) pieChart.destroy();
-
   pieChart = new Chart(document.getElementById("pieChart"), {
     type: 'pie',
     data: {
-      labels: ['اتصال', 'زيارة', 'اتفاق', 'رفض', 'انتظار'],
+      labels: ['اتصال','زيارة','اتفاق','رفض','انتظار'],
       datasets: [{
         data: [calls, visits, deals, reject, pending],
         backgroundColor: ['#2196f3','#9c27b0','#4caf50','#f44336','#ff9800']
@@ -177,13 +200,11 @@ let employees = {};
     }
   });
 
-  // BAR CHART
   if(barChart) barChart.destroy();
-
   barChart = new Chart(document.getElementById("barChart"), {
     type: 'bar',
     data: {
-      labels: ['اتصال', 'زيارة', 'اتفاق', 'رفض', 'انتظار'],
+      labels: ['اتصال','زيارة','اتفاق','رفض','انتظار'],
       datasets: [{
         label: 'عدد العمليات',
         data: [calls, visits, deals, reject, pending],
@@ -192,15 +213,13 @@ let employees = {};
     }
   });
 
-  // تحليل ذكي
   let tip = "";
-
   if(rej > 40){
-    tip = "⚠️ نسبة الرفض عالية، تحتاج تحسين أسلوب الإقناع";
+    tip = "⚠️ نسبة الرفض عالية، لازم تغير أسلوب البيع";
   } else if(success > 20){
-    tip = "🔥 أداء ممتاز، استمر";
+    tip = "🔥 أداء ممتاز";
   } else {
-    tip = "📈 ركز على المتابعة والزيارات";
+    tip = "📈 ركز على الزيارات والمتابعة";
   }
 
   document.getElementById("tips").innerText = tip;
