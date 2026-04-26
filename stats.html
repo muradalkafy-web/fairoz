@@ -138,16 +138,19 @@ onValue(ref(db,'schools'), (snap)=>{
   let topSchool = {name:"-", students:0};
   let teams = {};
 
-  for(let id in data){
-    const s = data[id];
+ for(let id in data){
+  const s = data[id];
 
-    total++;
+if(s.deleted) continue;
+  total++;
 
-    if(s.status==="called") calls++;
-    if(s.status==="visited") visits++;
-    if(s.status==="deal") deals++;
-    if(s.status==="reject") reject++;
-    if(s.status==="pending") pending++;
+const status = (s.status || "").trim().toLowerCase();
+
+if(status==="called") calls++;
+if(status==="visited") visits++;
+if(status==="deal") deals++;
+if(status==="reject") reject++;
+if(status==="pending") pending++;
 
     // 🔥 أكبر مدرسة
     const students = Number(s.students || 0);
