@@ -272,9 +272,9 @@ window.upload = async function(){
       await push(ref(db,'schools'),{
         code,
         name: row.name || "",
-phone1: String(row.phone1 || ""),
-phone2: String(row.phone2 || ""),
-phone3: String(row.phone3 || ""),
+phone1: String(row.phone1 || row.Phone1 || row.phone || ""),
+phone2: String(row.phone2 || row.Phone2 || ""),
+phone3: String(row.phone3 || row.Phone3 || ""),
         manager: row.manager || "",
         students: row.students || "",
         location: row.location || "",

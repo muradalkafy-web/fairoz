@@ -309,7 +309,7 @@ function clean(text){
 // القيم
 const name = clean(s.name);
 const code = clean(s.code);
-const phone = clean(s.phone);
+const phone = clean(s.phone1 || s.phone2 || s.phone3 || s.phone);
 const searchClean = clean(search);
 
 // البحث الذكي
@@ -337,7 +337,7 @@ onclick="handleCardClick('${id}')">
         ${s.name}
       </div>
 
-      <div>📞 ${s.phone}</div>
+    <div>📞 ${s.phone1 || s.phone || "-"}</div>
       <div>👥 ${s.team}</div>
       <div class="status">📊 ${translate(s.status)}</div>
 <div class="buttons" onclick="event.stopPropagation()">

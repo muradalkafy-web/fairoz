@@ -280,7 +280,9 @@ function render(){
     <div class="section-title">📌 المعلومات</div>
 ${field("nameInput","📛 اسم المدرسة", s.name)}
 ${field("codeInput","🔢 الكود", s.code)}
-${field("phoneInput","📞 الهاتف", s.phone)}
+${field("phone1Input","📞 رقم 1", s.phone1)}
+${field("phone2Input","📞 رقم 2", s.phone2)}
+${field("phone3Input","📞 رقم 3", s.phone3)}
 ${field("managerInput","👤 المسؤول", s.manager)}
 ${field("studentsInput","👥 عدد الطلاب", s.students)}
 ${field("teamInput","🏢 الفريق", s.team)}
@@ -315,11 +317,11 @@ border-radius:10px;
     <textarea id="noteInput" placeholder="ملاحظة..."></textarea>
 <div class="actions">
 
-  <a href="tel:${s.phone}">
+<a href="tel:${s.phone1 || s.phone}">
     📞 اتصال
   </a>
 
- <a href="https://wa.me/964${(s.phone || '').replace(/^0/,'')}" target="_blank" class="whatsapp-action">
+ <a href="https://wa.me/964${(s.phone1 || s.phone || '').replace(/^0/,'')}" target="_blank" class="whatsapp-action">
   💬 واتساب
 </a>
 
@@ -399,7 +401,9 @@ window.saveAll = function(){
 
     name: document.getElementById("nameInput").value,
     code: document.getElementById("codeInput").value,
-    phone: document.getElementById("phoneInput").value,
+phone1: document.getElementById("phone1Input").value,
+phone2: document.getElementById("phone2Input").value,
+phone3: document.getElementById("phone3Input").value,
     manager: document.getElementById("managerInput").value,
     students: document.getElementById("studentsInput").value,
     team: document.getElementById("teamInput").value,
