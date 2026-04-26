@@ -117,7 +117,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 // 🔒 تحقق تسجيل الدخول أولاً
 if(!localStorage.getItem("user")){
-  location.href="login.html";
+  location.href="index.html";
 }
 
 const role = localStorage.getItem("role");

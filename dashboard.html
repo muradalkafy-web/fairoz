@@ -92,7 +92,7 @@ header {
 
 // حماية الصفحة
 if(!localStorage.getItem("user")){
-  location.href="login.html";
+  location.href="index.html";
 }
 
 function go(page){
@@ -101,7 +101,7 @@ function go(page){
 
 function logout(){
   localStorage.removeItem("user");
-  location.href="login.html";
+  location.href="index.html";
 }
 
 </script>
