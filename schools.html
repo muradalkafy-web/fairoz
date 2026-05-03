@@ -3,529 +3,592 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام فيروز</title>
+<title>نظام فيروز المطور</title>
+
+<!-- خطوط وأيقونات -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.selected-card {
-  background: #c8f7c5 !important; /* أخضر واضح */
-  border: 2px solid #28a745;
-  box-shadow: 0 0 10px rgba(40,167,69,0.5);
-}
-body {
-  margin:0;
-  font-family: Tahoma;
-  background:#f4f7f6;
-}
+    :root {
+        --primary: #0f9d58;
+        --primary-dark: #0b7a43;
+        --bg: #f4f7f6;
+        --text: #2c3e50;
+        --white: #ffffff;
+        --shadow: 0 4px 15px rgba(0,0,0,0.05);
+        
+        /* ألوان الحالات */
+        --st-new: #95a5a6;
+        --st-called: #3498db;
+        --st-appt: #f39c12;
+        --st-visit: #9b59b6;
+        --st-deal: #2ecc71; /* أخضر للاتفاقات */
+        --st-reject: #e74c3c;
+        --st-pending: #34495e;
+    }
 
-/* HEADER */
-header {
-  background:#0f9d58;
-  color:white;
-  padding:14px;
-  font-size:18px;
-  text-align:center;
-}
+    body {
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 50px;
+    }
 
-/* DASHBOARD */
-.dashboard {
-  display:grid;
-  grid-template-columns: repeat(2,1fr);
-  gap:10px;
-  padding:10px;
-}
+    /* HEADER */
+    header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 12px rgba(15, 157, 88, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
 
-.box {
-  background:white;
-  padding:12px;
-  border-radius:10px;
-  text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
+    .header-title {
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-/* SEARCH + FILTER */
-.filter {
-  padding:10px;
-}
+    .btn-icon {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
 
-input, select {
-  width:100%;
-  padding:10px;
-  margin-bottom:8px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
+    .btn-icon:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
 
-/* CARDS */
-.container {
-  padding:10px;
-}
+    .delete-active {
+        background: var(--st-reject) !important;
+        animation: shake 0.5s;
+    }
 
-.card {
-  background:white;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  border-right:4px solid #0f9d58;
-}
+    /* DASHBOARD */
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
-/* TEXT */
-.code {
-  color:#0f9d58;
-  font-weight:bold;
-  font-size:12px;
-  margin-bottom:4px;
-}
+    .stat-card {
+        background: var(--white);
+        padding: 15px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        border-bottom: 4px solid transparent;
+        transition: transform 0.3s;
+    }
 
-.name {
-  font-weight:bold;
-  font-size:16px;
-  cursor:pointer;
-}
+    .stat-card:hover { transform: translateY(-5px); }
 
-.name:hover {
-  color:#0f9d58;
-}
+    .stat-num { font-size: 28px; font-weight: 800; display: block; margin-bottom: 5px; }
+    .stat-lbl { font-size: 14px; color: #7f8c8d; font-weight: 600; }
 
-.status {
-  font-weight:bold;
-  margin:6px 0;
-}
+    /* CONTROLS */
+    .controls {
+        background: var(--white);
+        padding: 20px;
+        margin: 0 20px 20px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        max-width: 1160px;
+        margin-left: auto; 
+        margin-right: auto;
+    }
 
-/* BUTTONS */
-.buttons {
-  display:grid;
-  grid-template-columns: repeat(3,1fr);
-  gap:5px;
-  margin-top:8px;
-}
+    .inputs-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    
+    input, select {
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        font-family: 'Cairo';
+        outline: none;
+        transition: 0.3s;
+        background: #fafafa;
+    }
+    
+    input:focus, select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(15,157,88,0.1); }
+    #searchInput { flex: 2; min-width: 200px; }
+    #teamFilter { flex: 1; min-width: 150px; }
 
-button {
-  padding:8px 12px;
-  border:none;
-  border-radius:20px;
-  font-size:13px;
-  cursor:pointer;
-  background:#e0e0e0;
-  color:#333;
-  transition:0.2s;
-}
+    .status-scroll {
+        display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+    .status-scroll::-webkit-scrollbar { display: none; } /* Hide Chrome */
 
-/* عند المرور */
-button:hover {
-  background:#0f9d58;
-  color:white;
-}
+    .filter-chip {
+        background: #f0f2f5;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: 'Cairo';
+        font-size: 13px;
+        white-space: nowrap;
+        transition: 0.3s;
+        color: #666;
+        display: flex; align-items: center; gap: 5px;
+    }
 
-/* الزر النشط */
-.active-filter {
-  background:#0f9d58 !important;
-  color:white !important;
-  font-weight:bold;
-}
+    .filter-chip.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 10px rgba(15,157,88,0.3);
+    }
 
-.call {background:#2196f3;}
-.appointment {background:#ff9800;}
-.visit {background:#9c27b0;}
-.deal {background:#4caf50;}
-.reject {background:#f44336;}
-.pending {background:#607d8b;}
-.back-btn {
-  position:absolute;
-  right:10px;
-  top:10px;
-  width:40px;
-  height:40px;
-  background:white;
-  border:none;
-  border-radius:50%;
-  box-shadow:0 2px 6px rgba(0,0,0,0.2);
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-  transition:0.2s;
-}
+    /* EXPORT AREA */
+    .export-actions {
+        display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;
+    }
 
-.back-btn:active {
-  transform:scale(0.9);
-}
+    .btn-dl {
+        padding: 12px 25px; border: none; border-radius: 10px;
+        font-family: 'Cairo'; font-weight: bold; cursor: pointer;
+        color: white; display: flex; align-items: center; gap: 8px;
+        transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
 
-.arrow {
-  border: solid #0f9d58;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  padding: 6px;
-  transform: rotate(135deg);
-}
+    .dl-excel { background: #217346; } .dl-excel:hover { background: #145c32; }
+    .dl-word { background: #2b579a; } .dl-word:hover { background: #1e3f72; }
+
+    /* CARDS GRID */
+    .grid-container {
+        padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background: var(--white);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        border-right: 6px solid #ddd;
+        position: relative;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+
+    /* Dynamic Borders based on status */
+    .card[data-status="new"] { border-right-color: var(--st-new); }
+    .card[data-status="called"] { border-right-color: var(--st-called); }
+    .card[data-status="appointment"] { border-right-color: var(--st-appt); }
+    .card[data-status="visited"] { border-right-color: var(--st-visit); }
+    .card[data-status="deal"] { border-right-color: var(--st-deal); }
+    .card[data-status="reject"] { border-right-color: var(--st-reject); }
+    .card[data-status="pending"] { border-right-color: var(--st-pending); }
+
+    .card.selected {
+        background: #e8f5e9;
+        border: 2px solid var(--primary);
+        transform: scale(1.02);
+    }
+
+    .chk-box {
+        position: absolute; top: 15px; left: 15px;
+        width: 20px; height: 20px; accent-color: var(--st-reject);
+        display: none; cursor: pointer; z-index: 10;
+    }
+
+    .mode-delete .chk-box { display: block; }
+    .mode-delete .card { padding-left: 40px; }
+
+    .card-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .badge-code { background: #eee; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; color: #555; }
+    .badge-team { font-size: 12px; color: #888; font-weight: 600; }
+
+    .school-name { font-size: 17px; font-weight: 700; color: #222; margin-bottom: 8px; line-height: 1.4; }
+    
+    .info-row { font-size: 13px; color: #666; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+    .info-row i { width: 16px; text-align: center; color: var(--primary); }
+
+    .status-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 5px 12px; border-radius: 20px;
+        font-size: 12px; font-weight: bold; margin-top: 10px;
+        background: #f8f9fa;
+    }
+
+    @keyframes shake {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(5deg); }
+        50% { transform: rotate(0eg); }
+        75% { transform: rotate(-5deg); }
+        100% { transform: rotate(0deg); }
+    }
 </style>
 </head>
 
 <body>
 
-<header style="position:relative">
-
-<button onclick="goBack()" class="back-btn">
-  <span class="arrow"></span>
-</button>
-📚 نظام مطبعة فيروز
-<button id="deleteBtn" onclick="handleDeleteClick()" style="
-position:absolute;
-left:10px;
-top:10px;
-background:#f44336;
-color:white;
-border:none;
-padding:6px 10px;
-border-radius:8px;
-font-size:13px;
-cursor:pointer;
-display:none;
-">
-🗑️
-</button>
-
+<header>
+    <div class="header-title">
+        <i class="fas fa-print"></i>
+        <span>نظام فيروز</span>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="goBack()" class="btn-icon" title="رجوع"><i class="fas fa-arrow-right"></i></button>
+        <button id="delBtn" onclick="toggleDeleteMode()" class="btn-icon" title="وضع الحذف"><i class="fas fa-trash-alt"></i></button>
+    </div>
 </header>
-<button onclick="exportExcel()" style="
-margin:10px;
-width:90%;
-padding:12px;
-background:#4caf50;
-color:white;
-border:none;
-border-radius:10px;
-font-size:15px;
-font-weight:bold;
-cursor:pointer;
-">
-📥 تحميل Excel
-</button>
+
 <!-- DASHBOARD -->
 <div class="dashboard">
-  <div class="box">📊 الكل: <span id="total">0</span></div>
-  <div class="box">☎️ اتصالات: <span id="calls">0</span></div>
-  <div class="box">🚗 زيارات: <span id="visits">0</span></div>
-  <div class="box">🤝 اتفاقات: <span id="deals">0</span></div>
+    <div class="stat-card" style="border-bottom-color: #333;">
+        <span class="stat-num" id="cnt-total">0</span>
+        <span class="stat-lbl">الكل</span>
+    </div>
+    <div class="stat-card" style="border-bottom-color: var(--st-called);">
+        <span class="stat-num" id="cnt-called" style="color:var(--st-called)">0</span>
+        <span class="stat-lbl">اتصالات</span>
+    </div>
+    <div class="stat-card" style="border-bottom-color: var(--st-appt);">
+        <span class="stat-num" id="cnt-appt" style="color:var(--st-appt)">0</span>
+        <span class="stat-lbl">مواعيد</span>
+    </div>
+    <div class="stat-card" style="border-bottom-color: var(--st-visit);">
+        <span class="stat-num" id="cnt-visit" style="color:var(--st-visit)">0</span>
+        <span class="stat-lbl">زيارات</span>
+    </div>
+    <div class="stat-card" style="border-bottom-color: var(--st-deal);">
+        <span class="stat-num" id="cnt-deal" style="color:var(--st-deal)">0</span>
+        <span class="stat-lbl">اتفاقات</span>
+    </div>
 </div>
 
+<!-- FILTERS -->
+<div class="controls">
+    <div class="inputs-row">
+        <input id="searchInput" type="text" placeholder="🔍 بحث (اسم، كود، هاتف)...">
+        <select id="teamFilter">
+            <option value="all">كل الفرق</option>
+            <option value="A">فريق A</option>
+            <option value="B">فريق B</option>
+        </select>
+    </div>
 
-<div class="filter">
-<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
-
-<button class="filter-btn" onclick="setStatusFilter('all')">الكل</button>
-<button class="filter-btn" onclick="setStatusFilter('new')">جديدة</button>
-<button class="filter-btn" onclick="setStatusFilter('called')">اتصال</button>
-<button class="filter-btn" onclick="setStatusFilter('appointment')">موعد</button>
-<button class="filter-btn" onclick="setStatusFilter('visited')">زيارة</button>
-<button class="filter-btn" onclick="setStatusFilter('deal')">اتفاق</button>
-<button class="filter-btn" onclick="setStatusFilter('reject')">رفض</button>
-<button class="filter-btn" onclick="setStatusFilter('pending')">انتظار</button>
-
+    <div class="status-scroll">
+        <button class="filter-chip active" onclick="setFilter('all', this)">الكل</button>
+        <button class="filter-chip" onclick="setFilter('new', this)">جديدة</button>
+        <button class="filter-chip" onclick="setFilter('called', this)">اتصال</button>
+        <button class="filter-chip" onclick="setFilter('appointment', this)">موعد</button>
+        <button class="filter-chip" onclick="setFilter('visited', this)">زيارة</button>
+        <button class="filter-chip" onclick="setFilter('deal', this)">اتفاق</button>
+        <button class="filter-chip" onclick="setFilter('reject', this)">رفض</button>
+        <button class="filter-chip" onclick="setFilter('pending', this)">انتظار</button>
+    </div>
 </div>
-<input id="searchInput" placeholder="🔍 بحث (اسم / كود / رقم)">
 
-<select id="teamFilter">
-  <option value="all">كل الفرق</option>
-  <option value="A">فريق A</option>
-  <option value="B">فريق B</option>
-</select>
-
+<!-- EXPORT -->
+<div class="export-actions">
+    <button onclick="startExport('excel')" class="btn-dl dl-excel">
+        <i class="fas fa-file-excel"></i> تصدير Excel
+    </button>
+    <button onclick="startExport('word')" class="btn-dl dl-word">
+        <i class="fas fa-file-word"></i> تصدير Word
+    </button>
 </div>
 
 <!-- LIST -->
-<div class="container" id="schoolsList"></div>
+<div class="grid-container" id="listContainer"></div>
+
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, push } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    // ⚠️ إعدادات فايربيس
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "firoz-system.firebaseapp.com",
+        databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+        projectId: "firoz-system"
+    };
 
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "firoz-system.firebaseapp.com",
-  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
-  projectId: "firoz-system"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-// 🔒 حماية + صلاحيات
-const role = localStorage.getItem("role");
-
-if(!role){
-  location.href = "index.html";
-}
-
-// 👇 هذه صفحة المدارس (operator + admin فقط)
-if(role !== "admin" && role !== "operator"){
-
-  location.href = "dashboard.html";
-}
-const db = getDatabase(app);
-const params = new URLSearchParams(window.location.search);
-const selectedStatus = params.get("status");
-let dataAll = {};
-let selected = [];
-let deleteMode = false;
-let currentStatus = selectedStatus || "all";
-onValue(ref(db,'schools'), (snap)=>{
-  dataAll = snap.val() || {};
-  render();
-});
-
-document.getElementById("teamFilter").onchange = render;
-document.getElementById("searchInput").oninput = render;
-
-function render(){
-
-  const search = document.getElementById("searchInput").value.toLowerCase();
-  const filter = document.getElementById("teamFilter").value;
-  const container = document.getElementById("schoolsList");
-
-let total=0, calls=0, visits=0, deals=0, appointments=0;
-
-  container.innerHTML="";
-
-  for(let id in dataAll){
-    
-const s = dataAll[id];
-if(s.deleted) continue;
-// 🔥 فلترة حسب الحالة (هذا المهم)
-if(currentStatus !== "all"){
-  if(s.status !== currentStatus) continue;
-}
-
-let buttonsHTML = "";
-
-
- // تنظيف النص
-function clean(text){
-  return String(text)
-    .toLowerCase()
-    .replace(/[\s\-]/g,'') // يشيل المسافات والـ -
-}
-
-// القيم
-const name = clean(s.name);
-const code = clean(s.code);
-const phone = clean(s.phone1 || s.phone2 || s.phone3 || s.phone);
-const searchClean = clean(search);
-
-// البحث الذكي
-if(searchClean &&
-   !name.includes(searchClean) &&
-   !code.includes(searchClean) &&
-   !phone.includes(searchClean)
-) continue;
-
-    if(filter !== "all" && s.team !== filter) continue;
-
-    total++;
-
-    if(s.status==="called") calls++;
-    if(s.status==="appointment") appointments++;
-    if(s.status==="visited") visits++;
-    if(s.status==="deal") deals++;
-
-    container.innerHTML += `
-   <div class="card ${selected.includes(id) ? 'selected-card' : ''}" 
-onclick="handleCardClick('${id}')">
-      <div class="code">${s.code ? s.code : id}</div>
-
-  <div class="name"onclick="event.stopPropagation(); handleCardClick('${id}')">
-        ${s.name}
-      </div>
-
-    <div>📞 ${s.phone1 || s.phone || "-"}</div>
-      <div>👥 ${s.team}</div>
-      <div class="status">📊 ${translate(s.status)}</div>
-<div class="buttons" onclick="event.stopPropagation()">
-  ${buttonsHTML}
-</div>
-    `;
-  }
-
-  document.getElementById("total").innerText=total;
-  document.getElementById("calls").innerText=calls;
-  document.getElementById("visits").innerText=visits;
-  document.getElementById("deals").innerText=deals;
-// 🔥 التحكم بزر الحذف
-const btn = document.getElementById("deleteBtn");
-
-if(btn){
-  btn.style.display = "block"; // دائماً ظاهر
-  btn.style.background = deleteMode ? "#000" : "#f44336";
-}
-}
-window.setStatusFilter = function(status){
-
-  currentStatus = status;
-
-  // إزالة التفعيل من الكل
-  document.querySelectorAll(".filter-btn").forEach(btn=>{
-    btn.classList.remove("active-filter");
-  });
-
-  // تفعيل الزر المضغوط
-  event.target.classList.add("active-filter");
-
-  render();
-}
-window.handleDeleteClick = function(){
-
-  // 🔥 أول ضغطة → دخول وضع التحديد
-  if(!deleteMode){
-    deleteMode = true;
-    render();
-    return;
-  }
-
-  // 🔥 داخل وضع التحديد وماكو تحديد → إلغاء
-  if(selected.length === 0){
-    deleteMode = false;
-    render();
-    return;
-  }
-
-  // 🔥 داخل وضع التحديد وعندك عناصر → حذف
-  if(!confirm("متأكد تريد تحذف؟")) return;
-
-  selected.forEach(id=>{
-    update(ref(db,'schools/'+id),{
-      deleted: true
-    });
-  });
-
-  selected = [];
-  deleteMode = false;
-
-  render();
-}
-window.openDetails = function(id){
-  location.href = "school-details.html?id=" + id;
-}
-
-function translate(s){
-  if(s==="new") return "جديدة";
-  if(s==="called") return "تم الاتصال";
-  if(s==="appointment") return "موعد";
-  if(s==="visited") return "تمت الزيارة";
-  if(s==="deal") return "اتفاق";
-  if(s==="reject") return "مرفوض";
-  if(s==="pending") return "قيد الانتظار";
-  return s;
-}
-window.handleCardClick = function(id){
-
-  if(deleteMode){
-    toggleSelect(id);
-  } else {
-    openDetails(id);
-  }
-
-}
-window.toggleSelect = function(id){
-
-  if(selected.includes(id)){
-    selected = selected.filter(x => x !== id);
-  } else {
-    selected.push(id);
-  }
-
-  render();
-}
-window.goBack = function(){
-  location.href = "dashboard.html";
-}
-window.exportExcel = function(){
-const order = {
-  new: 1,
-  called: 2,
-  appointment: 3,
-  visited: 4,
-  deal: 5,
-  reject: 6,
-  pending: 7
-};
-  let rows = [];
-
-for(let id in dataAll){
-
-const s = dataAll[id];
-
-// 🔥 هنا بالضبط
-if(s.deleted) continue;
-
-    // 🔥 تحويل السجل إلى نص
-    let historyText = "";
-
-    if(s.history){
-      Object.values(s.history).forEach(h=>{
-        historyText += `${h.time} - ${h.user} - ${h.action}\n`;
-      });
+    // التحقق من الدخول
+    const role = localStorage.getItem("role");
+    if(!role || (role !== "admin" && role !== "operator")){
+        location.href = "index.html";
     }
 
-    rows.push({
-        "_order": order[s.status] || 99,
-      "الكود": s.code || id,
-      "اسم المدرسة": s.name || "",
-      "رقم الهاتف": s.phone || "",
-      "المسؤول": s.manager || "",
-      "عدد الطلاب": s.students || "",
-      "الفريق": s.team || "",
-      "العنوان": s.address || "",
-      "الموقع": s.location || "",
-      "الحالة": translate(s.status),
-      "السجل الكامل": historyText
+    // متغيرات الحالة
+    let allData = {};
+    let selectedIds = [];
+    let isDeleteMode = false;
+    let currentStatus = "all";
+
+    // جلب البيانات
+    onValue(ref(db, 'schools'), (snap) => {
+        allData = snap.val() || {};
+        renderList();
     });
 
-  }
-rows.sort((a, b) => a._order - b._order);
-rows = rows.map(r => {
-  delete r._order;
-  return r;
-});
-  const ws = XLSX.utils.json_to_sheet(rows);
+    document.getElementById("teamFilter").onchange = renderList;
+    document.getElementById("searchInput").oninput = renderList;
 
-  ws['!cols'] = [
-    {wch:10},{wch:20},{wch:15},{wch:20},
-    {wch:10},{wch:10},{wch:25},{wch:25},
-    {wch:15},{wch:80}
-  ];
+    // دالة العرض الرئيسية
+    function renderList(){
+        const searchVal = document.getElementById("searchInput").value.toLowerCase().trim();
+        const teamVal = document.getElementById("teamFilter").value;
+        const container = document.getElementById("listContainer");
+        
+        // تصفير العدادات
+        let counts = { total:0, called:0, appointment:0, visited:0, deal:0 };
+        container.innerHTML = "";
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "المدارس");
+        // تبديل كلاس الجسم لوضع الحذف
+        if(isDeleteMode) document.body.classList.add('mode-delete');
+        else document.body.classList.remove('mode-delete');
 
-  XLSX.writeFile(wb, "schools.xlsx");
-}
+        for(let key in allData){
+            const item = allData[key];
+            if(item.deleted) continue;
 
-window.deleteSelected = function(){
+            // فلترة الحالة
+            if(currentStatus !== "all" && item.status !== currentStatus) continue;
 
-  // 🔥 لازم يكون داخل وضع الحذف
-  if(!deleteMode){
-    alert("فعّل وضع الحذف أولاً");
-    return;
-  }
+            // فلترة البحث
+            const clean = (t) => String(t||"").toLowerCase().replace(/[\s\-]/g,'');
+            const q = clean(searchVal);
+            if(q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
 
-  if(selected.length === 0){
-    alert("ماكو تحديد");
-    return;
-  }
+            // فلترة الفريق
+            if(teamVal !== "all" && item.team !== teamVal) continue;
 
-  if(!confirm("متأكد تريد تحذف؟")) return;
+            // تحديث العدادات (للبيانات المفلترة فقط)
+            counts.total++;
+            if(counts[item.status] !== undefined) counts[item.status]++;
 
-  selected.forEach(id=>{
-    update(ref(db,'schools/'+id),{
-      deleted: true
-    });
-  });
+            // إنشاء البطاقة
+            const el = document.createElement('div');
+            el.className = `card ${selectedIds.includes(key) ? 'selected' : ''}`;
+            el.dataset.status = item.status;
+            el.onclick = (e) => cardClick(key, e);
 
-  selected = [];
-  deleteMode = false;
+            el.innerHTML = `
+                <input type="checkbox" class="chk-box" 
+                    ${selectedIds.includes(key)?'checked':''} 
+                    onclick="event.stopPropagation(); toggleSelect('${key}')">
+                
+                <div class="card-head">
+                    <span class="badge-code">${item.code || '#' + key.substr(0,4)}</span>
+                    <span class="badge-team">${item.team ? 'فريق '+item.team : ''}</span>
+                </div>
 
-  render();
-}
+                <div class="school-name">${item.name}</div>
+                
+                <div class="info-row"><i class="fas fa-phone"></i> ${item.phone1 || item.phone || "-"}</div>
+                <div class="info-row"><i class="fas fa-user-tie"></i> ${item.manager || "غير محدد"}</div>
+                
+                <div class="status-pill" style="color:${getColor(item.status)}">
+                    <i class="fas ${getIcon(item.status)}"></i> ${translate(item.status)}
+                </div>
+            `;
+            container.appendChild(el);
+        }
+
+        // تحديث الواجهة بالأرقام
+        document.getElementById("cnt-total").innerText = counts.total;
+        document.getElementById("cnt-called").innerText = counts.called;
+        document.getElementById("cnt-appt").innerText = counts.appointment;
+        document.getElementById("cnt-visit").innerText = counts.visited;
+        document.getElementById("cnt-deal").innerText = counts.deal;
+
+        // تحديث زر الحذف
+        const btn = document.getElementById("delBtn");
+        if(isDeleteMode){
+            btn.classList.add("delete-active");
+            btn.innerHTML = `<i class="fas fa-check"></i> (${selectedIds.length})`;
+        } else {
+            btn.classList.remove("delete-active");
+            btn.innerHTML = `<i class="fas fa-trash-alt"></i>`;
+        }
+    }
+
+    // --- منطق التصدير الذكي ---
+    window.startExport = function(type){
+        const searchVal = document.getElementById("searchInput").value.toLowerCase().trim();
+        const teamVal = document.getElementById("teamFilter").value;
+        const clean = (t) => String(t||"").toLowerCase().replace(/[\s\-]/g,'');
+        const q = clean(searchVal);
+
+        let rows = [];
+        // هل نعرض السجل؟ نعم فقط إذا كان الفلتر "الكل"
+        const showHistory = (currentStatus === 'all');
+
+        for(let key in allData){
+            const item = allData[key];
+            if(item.deleted) continue;
+            if(currentStatus !== "all" && item.status !== currentStatus) continue;
+            
+            if(q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
+            if(teamVal !== "all" && item.team !== teamVal) continue;
+
+            let rowObj = {
+                "الكود": item.code || key,
+                "المدرسة": item.name || "",
+                "الهاتف": item.phone1 || item.phone || "",
+                "المدير": item.manager || "",
+                "الفريق": item.team || "",
+                "العنوان": item.address || "",
+                "الحالة": translate(item.status)
+            };
+
+            // إضافة السجل فقط إذا طلبنا "الكل"
+            if(showHistory && item.history){
+                let histText = "";
+                Object.values(item.history).forEach(h => {
+                    histText += `[${h.time}] ${h.user}: ${h.action}\n`;
+                });
+                rowObj["سجل العمليات"] = histText;
+            }
+
+            rows.push(rowObj);
+        }
+
+        if(rows.length === 0){ alert("لا توجد بيانات للتصدير!"); return; }
+
+        if(type === 'excel') doExcel(rows, showHistory);
+        else doWord(rows, showHistory);
+    }
+
+    function doExcel(data, withHistory){
+        const ws = XLSX.utils.json_to_sheet(data);
+        // عرض الأعمدة
+        let cols = [{wch:10}, {wch:30}, {wch:15}, {wch:15}, {wch:10}, {wch:30}, {wch:15}];
+        if(withHistory) cols.push({wch:60}); // عمود السجل عريض
+        ws['!cols'] = cols;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Report");
+        XLSX.writeFile(wb, `Firoz_${currentStatus}_${Date.now()}.xlsx`);
+    }
+
+    async function doWord(data, withHistory){
+        const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, HeadingLevel, AlignmentType } = docx;
+        
+        const headers = Object.keys(data[0]);
+        
+        // بناء الصفوف
+        const tableRows = [
+            new TableRow({
+                children: headers.map(h => new TableCell({
+                    children: [new Paragraph({ text: h, alignment: AlignmentType.CENTER })],
+                    shading: { fill: "0f9d58" },
+                })),
+            }),
+        ];
+
+        data.forEach(item => {
+            tableRows.push(new TableRow({
+                children: Object.values(item).map(val => new TableCell({
+                    children: [new Paragraph(String(val))]
+                }))
+            }));
+        });
+
+        const doc = new Document({
+            sections: [{
+                children: [
+                    new Paragraph({
+                        text: `تقرير نظام فيروز - ${translate(currentStatus)}`,
+                        heading: HeadingLevel.HEADING_1,
+                        alignment: AlignmentType.CENTER
+                    }),
+                    new Table({ rows: tableRows, width: { size: 100, type: WidthType.PERCENTAGE } })
+                ]
+            }]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `Firoz_Report_${currentStatus}.docx`);
+    }
+
+    // --- وظائف مساعدة ---
+
+    window.setFilter = function(status, btn){
+        currentStatus = status;
+        document.querySelectorAll(".filter-chip").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        renderList();
+    }
+
+    window.toggleDeleteMode = function(){
+        if(!isDeleteMode){
+            isDeleteMode = true;
+            selectedIds = [];
+        } else {
+            // تنفيذ الحذف
+            if(selectedIds.length === 0) { alert("اختر عناصر أولاً"); return; }
+            if(!confirm(`حذف ${selectedIds.length} عنصر نهائياً؟`)) return;
+            
+            selectedIds.forEach(id => update(ref(db, `schools/${id}`), { deleted: true }));
+            selectedIds = [];
+            isDeleteMode = false;
+        }
+        renderList();
+    }
+
+    window.cardClick = function(id, e){
+        if(isDeleteMode) toggleSelect(id);
+        else location.href = `school-details.html?id=${id}`;
+    }
+
+    window.toggleSelect = function(id){
+        if(selectedIds.includes(id)) selectedIds = selectedIds.filter(x=>x!==id);
+        else selectedIds.push(id);
+        renderList();
+    }
+
+    window.goBack = () => history.back();
+
+    function translate(s){
+        const m = {"new":"جديدة","called":"تم الاتصال","appointment":"موعد","visited":"زيارة","deal":"اتفاق","reject":"مرفوض","pending":"انتظار"};
+        return m[s]||s;
+    }
+    function getColor(s){
+        const m = {"new":"#95a5a6","called":"#3498db","appointment":"#f39c12","visited":"#9b59b6","deal":"#2ecc71","reject":"#e74c3c","pending":"#34495e"};
+        return m[s]||"#333";
+    }
+    function getIcon(s){
+        const m = {"new":"fa-star","called":"fa-phone","appointment":"fa-calendar-check","visited":"fa-car","deal":"fa-handshake","reject":"fa-times-circle","pending":"fa-clock"};
+        return m[s]||"fa-circle";
+    }
 </script>
 
 </body>

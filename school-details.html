@@ -1,445 +1,498 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="viewport" content="width=device-width">
-<title>تفاصيل المدرسة</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>تفاصيل المدرسة | فيروز</title>
+
+<!-- خطوط وأيقونات -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  .whatsapp-action {
-  background: #25d366 !important;
-  color: white;
-  font-weight: bold;
-}
+    :root {
+        --primary: #0f9d58;
+        --primary-dark: #0b7a43;
+        --bg: #f4f7f6;
+        --card-bg: #ffffff;
+        --text: #333;
+        --gray: #777;
+        --shadow: 0 4px 12px rgba(0,0,0,0.06);
+        
+        /* ألوان الإجراءات */
+        --c-call: #2196f3;
+        --c-appt: #ff9800;
+        --c-visit: #9c27b0;
+        --c-deal: #4caf50;
+        --c-reject: #f44336;
+        --c-pending: #607d8b;
+        --c-whatsapp: #25d366;
+    }
 
-.whatsapp-action:hover {
-  background: #1ebe5d !important;
-}
-  .whatsapp-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 55px;
-  height: 55px;
-  background: #25d366;
-  color: white;
-  font-size: 28px;
-  border-radius: 50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-decoration:none;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
-  z-index:1000;
-  transition:0.3s;
-}
+    body {
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 80px; /* مساحة للزر العائم */
+    }
 
-.whatsapp-btn:hover {
-  transform: scale(1.1);
-  background:#1ebe5d;
-}
-  textarea {
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  background:#f9f9f9;
-  font-size:14px;
-  margin-bottom:10px;
-}
-body {
-  margin:0;
-  font-family:Tahoma;
-  background:#f4f7f6;
-}
+    /* HEADER */
+    header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
 
-header {
-  background:#0f9d58;
-  color:white;
-  padding:14px;
-  text-align:center;
-  font-size:18px;
-}
+    .header-title { font-size: 18px; font-weight: bold; }
 
-/* CONTAINER */
-.container {padding:10px;}
+    .icon-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.4); }
 
-/* CARD */
-.card {
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
+    /* LAYOUT */
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
 
-/* TITLE */
-.section-title {
-  font-weight:bold;
-  margin-bottom:8px;
-  color:#0f9d58;
-}
+    .card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        border-top: 4px solid transparent;
+    }
 
-/* ROW */
-.row {
-  margin:5px 0;
-  font-size:14px;
-}
+    .card.info-card { border-top-color: var(--primary); }
+    .card.action-card { border-top-color: var(--c-appt); }
+    .card.history-card { border-top-color: var(--c-pending); }
 
-/* NAME */
-.name {
-  font-size:20px;
-  font-weight:bold;
-  margin:5px 0;
-}
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+    }
 
-/* STATUS */
-.status {
-  font-weight:bold;
-  padding:5px 10px;
-  border-radius:8px;
-  display:inline-block;
-  color:white;
-}
+    /* INFO GRID */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
 
-.actions {
-  display:flex;
-  gap:10px;
-  margin-bottom:10px;
-}
+    .info-item label {
+        display: block;
+        font-size: 12px;
+        color: var(--gray);
+        margin-bottom: 4px;
+    }
+    .info-item span {
+        font-size: 15px;
+        font-weight: 600;
+        color: #222;
+    }
 
-.actions a {
-  flex:1;
-  text-align:center;
-  padding:12px;
-  font-weight:bold;
-  border-radius:10px;
-  text-decoration:none;
-  color:white;
-}
+    /* EDIT MODE INPUTS */
+    .edit-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-family: 'Cairo';
+        font-size: 14px;
+        background: #fafafa;
+        box-sizing: border-box;
+    }
+    .edit-input:focus {
+        border-color: var(--primary);
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(15,157,88,0.1);
+    }
 
-.actions a:first-child {
-  background:#4caf50; /* اتصال */
-}
+    /* ACTION BUTTONS GRID */
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
 
-.actions a:last-child {
-  background:#25d366; /* واتساب */
-}
+    .btn-status {
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        color: white;
+        font-family: 'Cairo';
+        font-weight: bold;
+        font-size: 13px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-status i { font-size: 18px; }
+    .btn-status:active { transform: scale(0.95); }
 
-/* BUTTONS */
-.buttons {
-  display:grid;
-  grid-template-columns: repeat(3,1fr);
-  gap:5px;
-  margin-top:10px;
-}
+    .bg-call { background: var(--c-call); }
+    .bg-appt { background: var(--c-appt); }
+    .bg-visit { background: var(--c-visit); }
+    .bg-deal { background: var(--c-deal); }
+    .bg-reject { background: var(--c-reject); }
+    .bg-pending { background: var(--c-pending); }
 
-button {
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  color:white;
-  cursor:pointer;
-}
+    /* NOTE AREA */
+    .note-area {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-family: 'Cairo';
+        resize: vertical;
+        min-height: 60px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+    }
 
-.call {background:#2196f3;}
-.appointment {background:#ff9800;}
-.visit {background:#9c27b0;}
-.deal {background:#4caf50;}
-.reject {background:#f44336;}
-.pending {background:#607d8b;}
-/* 🔥 INPUT احترافي */
-.input-group {
-  margin-bottom:12px;
-}
+    /* QUICK LINKS */
+    .quick-links {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .link-btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .btn-phone { background: #34495e; }
+    .btn-map { background: #e67e22; }
 
-.input-label {
-  font-size:12px;
-  color:#777;
-  margin-bottom:4px;
-}
+    /* HISTORY LIST */
+    .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .history-item {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .h-time { color: #999; font-size: 11px; }
+    .h-action { font-weight: bold; color: #444; }
+    .h-note { color: #666; display: block; margin-top: 3px; font-style: italic;}
 
-.input-field {
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  background:#f9f9f9;
-  font-size:14px;
-  transition:0.2s;
-}
+    /* FLOATING WHATSAPP */
+    .float-wa {
+        position: fixed;
+        bottom: 25px;
+        left: 25px;
+        background: var(--c-whatsapp);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        text-decoration: none;
+        z-index: 999;
+        transition: 0.3s;
+    }
+    .float-wa:hover { transform: scale(1.1); }
 
-.input-field:focus {
-  border-color:#0f9d58;
-  background:white;
-  outline:none;
-  box-shadow:0 0 0 2px rgba(15,157,88,0.2);
+    /* SAVE/CANCEL BTNS */
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .btn-save { background: var(--primary); color: white; flex: 2; padding: 12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+    .btn-cancel { background: #999; color: white; flex: 1; padding: 12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
 
-}
-.back-btn {
-  position:absolute;
-  right:10px;
-  top:10px;
-  width:40px;
-  height:40px;
-  background:white;
-  border:none;
-  border-radius:50%;
-  box-shadow:0 2px 6px rgba(0,0,0,0.2);
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-  transition:0.2s;
-}
-
-.back-btn:active {
-  transform:scale(0.9);
-}
-
-.arrow {
-  border: solid #0f9d58;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  padding: 6px;
-  transform: rotate(135deg);
-}
 </style>
 </head>
 
+<body>
 
-<header style="position:relative">
-
-<!-- زر الرجوع -->
-<button onclick="goBack()" class="back-btn">
-  <span class="arrow"></span>
-</button>
-
-📚 تفاصيل المدرسة
-
-<button onclick="toggleEdit()" id="editBtn" style="
-position:absolute;
-left:10px;
-top:10px;
-background:white;
-color:#0f9d58;
-border:none;
-padding:5px 10px;
-border-radius:8px;
-cursor:pointer;
-">
-✏️
-</button>
-
+<header>
+    <button onclick="goBack()" class="icon-btn"><i class="fas fa-arrow-right"></i></button>
+    <div class="header-title">تفاصيل المدرسة</div>
+    <button onclick="toggleEdit()" id="editBtn" class="icon-btn"><i class="fas fa-pen"></i></button>
 </header>
 
-<div class="container" id="content"></div>
+<div class="container" id="mainContent">
+    <!-- سيتم تعبئة المحتوى هنا بواسطة الجافاسكربت -->
+    <div style="text-align:center; padding:50px; color:#999;">جاري التحميل...</div>
+</div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, push } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "firoz-system.firebaseapp.com",
-  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
-  projectId: "firoz-system"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const urlParams = new URLSearchParams(window.location.search);
-const id = urlParams.get("id");
-
-const refSchool = ref(db,'schools/'+id);
-let editMode = false;
-let currentData = {};
-function render(){
-
-  const s = currentData;
-
- const field = (id, label, value) => {
-  return editMode
-    ? `
-      <div class="input-group">
-        <div class="input-label">${label}</div>
-        <input class="input-field" id="${id}" value="${value || ''}">
-      </div>
-    `
-    : `
-      <div class="row"><b>${label}:</b> ${value || "-"}</div>
-    `;
-};
-
-  document.getElementById("content").innerHTML = `
-
-  <div class="card">
-    <div class="section-title">📌 المعلومات</div>
-${field("nameInput","📛 اسم المدرسة", s.name)}
-${field("codeInput","🔢 الكود", s.code)}
-${field("phone1Input","📞 رقم 1", s.phone1)}
-${field("phone2Input","📞 رقم 2", s.phone2)}
-${field("phone3Input","📞 رقم 3", s.phone3)}
-${field("managerInput","👤 المسؤول", s.manager)}
-${field("studentsInput","👥 عدد الطلاب", s.students)}
-${field("teamInput","🏢 الفريق", s.team)}
-${field("addressInput","📍 العنوان", s.address)}
-${field("locationInput","🌍 الموقع", s.location)}
-
-    ${editMode ? `
-<button onclick="saveAll()" style="
-background:#0f9d58;
-margin-top:10px;
-width:100%;
-padding:12px;
-font-size:15px;
-font-weight:bold;
-border-radius:10px;
-">
-💾 حفظ التعديلات
-</button>
-<button onclick="cancelEdit()" style="
-background:#777;
-margin-top:5px;
-width:100%;
-padding:10px;
-border-radius:10px;
-">
-❌ إلغاء
-</button>
-    ` : ""}
-  </div>
-
-  <div class="card">
-    <textarea id="noteInput" placeholder="ملاحظة..."></textarea>
-<div class="actions">
-
-<a href="tel:${s.phone1 || s.phone}">
-    📞 اتصال
-  </a>
-
- <a href="https://wa.me/964${(s.phone1 || s.phone || '').replace(/^0/,'')}" target="_blank" class="whatsapp-action">
-  💬 واتساب
+<!-- زر واتساب العائم -->
+<a id="waFloat" href="#" target="_blank" class="float-wa">
+    <i class="fab fa-whatsapp"></i>
 </a>
 
-  <a href="${s.location || '#'}" target="_blank" style="background:#ff9800">
-    🌍 الموقع
-  </a>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-</div>
+    // ⚠️ تأكد من الإعدادات
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "firoz-system.firebaseapp.com",
+        databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+        projectId: "firoz-system"
+    };
 
-</div>
-  <div class="buttons">
-  <button class="call" onclick="setStatus('called')">اتصال</button>
-  <button class="appointment" onclick="setStatus('appointment')">موعد</button>
-  <button class="visit" onclick="setStatus('visited')">زيارة</button>
-  <button class="deal" onclick="setStatus('deal')">اتفاق</button>
-  <button class="reject" onclick="setStatus('reject')">رفض</button>
-  <button class="pending" onclick="setStatus('pending')">انتظار</button>
-</div>
-  </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-<div class="card">
-  <div class="section-title">📜 السجل</div>
-  <div id="history"></div>
-</div>
-  `;
-  let historyHtml = "";
+    const urlParams = new URLSearchParams(window.location.search);
+    const schoolId = urlParams.get("id");
+    
+    if(!schoolId) {
+        document.body.innerHTML = "<h3 style='text-align:center'>خطأ: لم يتم تحديد مدرسة</h3>";
+    }
 
-if(s.history){
-  Object.values(s.history).reverse().forEach(h=>{
-    historyHtml += `<div class="row">• ${h.action} (${h.note || "-"}) - ${h.time}</div>`;
-  });
-}
+    let currentData = {};
+    let isEditMode = false;
+    const schoolRef = ref(db, 'schools/' + schoolId);
 
-const el = document.getElementById("history");
-if(el) el.innerHTML = historyHtml;
-}
-onValue(refSchool,(snap)=>{
-  currentData = snap.val();
-  if(!currentData) return;
+    // جلب البيانات
+    onValue(schoolRef, (snap) => {
+        currentData = snap.val() || {};
+        render();
+    });
 
-  render();
-});
+    function render() {
+        const s = currentData;
+        const container = document.getElementById("mainContent");
+        
+        // تحديث رابط الواتساب العائم
+        const phoneWa = (s.phone1 || s.phone || "").replace(/^0/, ""); 
+        document.getElementById("waFloat").href = `https://wa.me/964${phoneWa}`;
 
+        // دالة مساعدة لعرض الحقل (نص أو إدخال)
+        const field = (key, label, icon) => {
+            const val = s[key] || "";
+            if(isEditMode) {
+                return `
+                <div class="info-item">
+                    <label>${icon} ${label}</label>
+                    <input type="text" class="edit-input" id="inp_${key}" value="${val}">
+                </div>`;
+            } else {
+                return `
+                <div class="info-item">
+                    <label>${icon} ${label}</label>
+                    <span>${val || "-"}</span>
+                </div>`;
+            }
+        };
 
-// تغيير الحالة
-window.setStatus = function(status){
+        // حالة العرض الحالية
+        const statusColors = {
+            "new": "#95a5a6", "called": "#2196f3", "appointment": "#ff9800",
+            "visited": "#9c27b0", "deal": "#4caf50", "reject": "#f44336", "pending": "#607d8b"
+        };
+        const stColor = statusColors[s.status] || "#333";
+        const stText = translate(s.status);
 
-  const note = document.getElementById("noteInput").value;
+        let html = `
+        <!-- CARD 1: INFO -->
+        <div class="card info-card">
+            <div class="section-title">
+                <i class="fas fa-school"></i> المعلومات الأساسية
+                ${!isEditMode ? `<span style="margin-right:auto; font-size:12px; color:${stColor}; background:${stColor}22; padding:2px 8px; border-radius:4px;">${stText}</span>` : ''}
+            </div>
+            <div class="info-grid">
+                ${field('name', 'اسم المدرسة', '<i class="fas fa-star"></i>')}
+                ${field('code', 'الكود', '<i class="fas fa-barcode"></i>')}
+                ${field('manager', 'المدير', '<i class="fas fa-user-tie"></i>')}
+                ${field('students', 'عدد الطلاب', '<i class="fas fa-users"></i>')}
+                ${field('team', 'الفريق', '<i class="fas fa-layer-group"></i>')}
+                ${field('address', 'العنوان', '<i class="fas fa-map-marker-alt"></i>')}
+                ${field('location', 'رابط الموقع', '<i class="fas fa-link"></i>')}
+            </div>
+            
+            <div class="info-grid" style="margin-top:15px; border-top:1px dashed #eee; padding-top:15px;">
+                ${field('phone1', 'رقم 1', '<i class="fas fa-phone"></i>')}
+                ${field('phone2', 'رقم 2', '<i class="fas fa-phone"></i>')}
+                ${field('phone3', 'رقم 3', '<i class="fas fa-phone"></i>')}
+            </div>
 
-  update(ref(db,'schools/'+id),{
-    status: status
-  });
+            ${isEditMode ? `
+            <div class="form-actions">
+                <button onclick="saveData()" class="btn-save"><i class="fas fa-save"></i> حفظ التعديلات</button>
+                <button onclick="cancelEdit()" class="btn-cancel">إلغاء</button>
+            </div>
+            ` : ''}
+        </div>
 
-  push(ref(db,'schools/'+id+'/history'),{
-    action: translate(status),
-    note: note,
-    time: new Date().toLocaleString()
-  });
+        <!-- CARD 2: ACTIONS -->
+        <div class="card action-card">
+            <div class="section-title"><i class="fas fa-bolt"></i> تحديث الحالة وتسجيل ملاحظة</div>
+            
+            <textarea id="noteInput" class="note-area" placeholder="اكتب ملاحظة هنا قبل تغيير الحالة (اختياري)..."></textarea>
+            
+            <div class="status-grid">
+                <button class="btn-status bg-call" onclick="updateStatus('called')"><i class="fas fa-phone-volume"></i> اتصال</button>
+                <button class="btn-status bg-appt" onclick="updateStatus('appointment')"><i class="fas fa-calendar-check"></i> موعد</button>
+                <button class="btn-status bg-visit" onclick="updateStatus('visited')"><i class="fas fa-car"></i> زيارة</button>
+                <button class="btn-status bg-deal" onclick="updateStatus('deal')"><i class="fas fa-handshake"></i> اتفاق</button>
+                <button class="btn-status bg-reject" onclick="updateStatus('reject')"><i class="fas fa-times-circle"></i> رفض</button>
+                <button class="btn-status bg-pending" onclick="updateStatus('pending')"><i class="fas fa-clock"></i> انتظار</button>
+            </div>
 
-  document.getElementById("noteInput").value = "";
-}
+            ${!isEditMode ? `
+            <div class="quick-links">
+                <a href="tel:${s.phone1 || s.phone}" class="link-btn btn-phone"><i class="fas fa-phone"></i> اتصال مباشر</a>
+                <a href="${s.location || '#'}" target="_blank" class="link-btn btn-map"><i class="fas fa-map-marked-alt"></i> فتح الخريطة</a>
+            </div>` : ''}
+        </div>
 
-// ترجمة
-function translate(s){
-  if(s==="new") return "جديدة";
-  if(s==="called") return "تم الاتصال";
-  if(s==="appointment") return "موعد";
-  if(s==="visited") return "تمت الزيارة";
-  if(s==="deal") return "اتفاق";
-  if(s==="reject") return "مرفوض";
-  if(s==="pending") return "قيد الانتظار";
-  return s;
-}
-window.saveAll = function(){
+        <!-- CARD 3: HISTORY -->
+        <div class="card history-card">
+            <div class="section-title"><i class="fas fa-history"></i> سجل العمليات</div>
+            <ul class="history-list">
+                ${renderHistory(s.history)}
+            </ul>
+        </div>
+        `;
 
-  update(ref(db,'schools/'+id),{
+        container.innerHTML = html;
+    }
 
-    name: document.getElementById("nameInput").value,
-    code: document.getElementById("codeInput").value,
-phone1: document.getElementById("phone1Input").value,
-phone2: document.getElementById("phone2Input").value,
-phone3: document.getElementById("phone3Input").value,
-    manager: document.getElementById("managerInput").value,
-    students: document.getElementById("studentsInput").value,
-    team: document.getElementById("teamInput").value,
-    address: document.getElementById("addressInput").value,
-    location: document.getElementById("locationInput").value,
+    function renderHistory(hist){
+        if(!hist) return '<li style="text-align:center; color:#999; padding:10px;">لا يوجد سجل بعد</li>';
+        
+        let hHtml = "";
+        Object.values(hist).reverse().forEach(h => {
+            hHtml += `
+            <li class="history-item">
+                <div>
+                    <div class="h-action">${h.action}</div>
+                    ${h.note ? `<span class="h-note">${h.note}</span>` : ''}
+                </div>
+                <div class="h-time">${h.time}</div>
+            </li>`;
+        });
+        return hHtml;
+    }
 
-  });
+    // --- FUNCTIONS ---
 
-  editMode = false;
+    window.toggleEdit = function(){
+        isEditMode = !isEditMode;
+        const btn = document.getElementById("editBtn");
+        btn.innerHTML = isEditMode ? '<i class="fas fa-times"></i>' : '<i class="fas fa-pen"></i>';
+        render();
+    }
 
-  // 🔥 يرجع زر القلم
-  const btn = document.getElementById("editBtn");
-  btn.innerText = "✏️";
+    window.cancelEdit = function(){
+        isEditMode = false;
+        document.getElementById("editBtn").innerHTML = '<i class="fas fa-pen"></i>';
+        render();
+    }
 
-  render();
+    window.saveData = function(){
+        const updates = {
+            name: document.getElementById("inp_name").value,
+            code: document.getElementById("inp_code").value,
+            manager: document.getElementById("inp_manager").value,
+            students: document.getElementById("inp_students").value,
+            team: document.getElementById("inp_team").value,
+            address: document.getElementById("inp_address").value,
+            location: document.getElementById("inp_location").value,
+            phone1: document.getElementById("inp_phone1").value,
+            phone2: document.getElementById("inp_phone2").value,
+            phone3: document.getElementById("inp_phone3").value,
+        };
+        
+        update(schoolRef, updates).then(() => {
+            alert("تم الحفظ بنجاح");
+            cancelEdit();
+        }).catch(err => alert("خطأ: " + err.message));
+    }
 
-}
-window.toggleEdit = function(){
+    window.updateStatus = function(newStatus){
+        const note = document.getElementById("noteInput").value;
+        if(!note && newStatus === 'deal') {
+           // يمكن إضافة تحقق إضافي هنا
+        }
 
-  editMode = !editMode; // 🔥 يقلب الوضع
+        const now = new Date().toLocaleString('ar-IQ');
+        
+        // تحديث الحالة
+        update(schoolRef, { status: newStatus });
 
-  const btn = document.getElementById("editBtn");
+        // إضافة للسجل
+        push(ref(db, `schools/${schoolId}/history`), {
+            action: translate(newStatus),
+            note: note,
+            time: now,
+            timestamp: Date.now()
+        });
 
-  if(btn){
-    btn.innerText = editMode ? "❌" : "✏️";
-  }
+        // تفريغ الملاحظة
+        document.getElementById("noteInput").value = "";
+    }
 
-  render();
-}
-window.cancelEdit = function(){
-  editMode = false;
-  render();
-}
-window.goBack = function(){
-  location.href = "schools.html";
-}
+    window.goBack = function(){
+        location.href = "schools.html"; // تأكد من اسم صفحة القائمة
+    }
+
+    function translate(s){
+        const map = {
+            "new":"إضافة جديدة", "called":"تم الاتصال", "appointment":"تحديد موعد",
+            "visited":"تمت الزيارة", "deal":"تم الاتفاق", "reject":"مرفوض", "pending":"انتظار"
+        };
+        return map[s] || s;
+    }
+
 </script>
 
 </body>
