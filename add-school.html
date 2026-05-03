@@ -2,188 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إضافة مدارس</title>
-
+<title>إضافة مدارس وفرق</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: Tahoma;
-  background: #f4f7f6;
-  margin:0;
-}
+body { font-family: 'Cairo', Tahoma; background: #f4f7f6; margin:0; }
+header { background:#0f9d58; color:white; padding:15px; text-align:center; font-size:18px; position:relative; }
+.card { background:white; margin:15px; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+h3 { margin-top:0; color:#0f9d58; border-bottom:1px solid #eee; padding-bottom:10px; }
 
-header {
-  background:#0f9d58;
-  color:white;
-  padding:12px;
-  text-align:center;
-  font-size:18px;
-}
+.input-group { margin-bottom:15px; }
+label { display:block; font-size:13px; color:#555; margin-bottom:5px; font-weight:bold; }
+input, select { width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; font-family:'Cairo'; }
+input:focus, select:focus { border-color:#0f9d58; outline:none; }
 
-.card {
-  background:white;
-  margin:10px;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
+button { width:100%; padding:12px; background:#0f9d58; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-family:'Cairo'; transition:0.2s; }
+button:hover { background:#0b7a43; }
+.secondary { background:#2196f3; margin-top:5px; }
+.secondary:hover { background:#1976d2; }
 
-.input-group {
-  margin-bottom:10px;
-}
+/* Team Manager Styles */
+.team-list { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+.team-tag { background:#eee; padding:5px 10px; border-radius:15px; font-size:12px; display:flex; align-items:center; gap:5px; }
+.del-team { color:red; cursor:pointer; font-weight:bold; }
 
-label {
-  font-size:13px;
-  color:#555;
-}
-
-input, select {
-  width:100%;
-  padding:10px;
-  margin-top:4px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-
-button {
-  width:100%;
-  padding:10px;
-  background:#0f9d58;
-  color:white;
-  border:none;
-  border-radius:8px;
-  margin-top:10px;
-}
-
-.secondary {
-  background:#2196f3;
-}
-.back-btn {
-  position:absolute;
-  right:10px;
-  top:10px;
-  width:40px;
-  height:40px;
-  background:white;
-  border:none;
-  border-radius:50%;
-  box-shadow:0 2px 6px rgba(0,0,0,0.2);
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-  transition:0.2s;
-}
-
-.back-btn:active {
-  transform:scale(0.9);
-}
-
-.arrow {
-  border: solid #0f9d58;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  padding: 6px;
-  transform: rotate(135deg);
-}
-
-.back-btn:active {
-  transform:scale(0.9);
-}
-
-.arrow {
-  border: solid #0f9d58;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  padding: 6px;
-  transform: rotate(135deg);
-}
+.back-btn { position:absolute; right:10px; top:10px; width:35px; height:35px; background:white; border:none; border-radius:50%; color:#0f9d58; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 </style>
 </head>
-
 <body>
 
-<header style="position:relative">
-
-<!-- زر الرجوع -->
-<button onclick="goBack()" class="back-btn">
-  <span class="arrow"></span>
-</button>
-
-📚 نظام إضافة المدارس
-
+<header>
+<button onclick="goBack()" class="back-btn"><i class="fas fa-arrow-right"></i></button>
+📚 إدارة المدارس والفرق
 </header>
+
+<!-- 🛠️ إدارة الفرق -->
+<div class="card" style="border-right: 5px solid #2196f3;">
+    <h3><i class="fas fa-users-cog"></i> إدارة الفرق</h3>
+    <div class="input-group">
+        <label>اسم الفريق الجديد (مثلاً: C, D, فريق النجوم)</label>
+        <div style="display:flex; gap:10px;">
+            <input id="newTeamName" placeholder="أدخل اسم الفريق...">
+            <button onclick="addNewTeam()" style="width:auto; background:#2196f3;">إضافة</button>
+        </div>
+    </div>
+    <div class="team-list" id="teamsListDisplay">
+        <!-- سيتم عرض الفرق هنا -->
+    </div>
+</div>
 
 <!-- 📥 رفع Excel -->
 <div class="card">
-<h3>📥 رفع Excel</h3>
-<input type="file" id="file">
-<button onclick="upload()">رفع الملف</button>
-<button class="secondary" onclick="downloadSample()">تحميل نموذج</button>
+<h3>📥 رفع ملف Excel</h3>
+<input type="file" id="file" accept=".xlsx, .xls">
+<button onclick="upload()" style="margin-top:10px;">رفع الملف</button>
+<button class="secondary" onclick="downloadSample()">تحميل نموذج فارغ</button>
 </div>
 
 <!-- ➕ إضافة يدوي -->
 <div class="card">
-<h3>➕ إضافة مدرسة</h3>
+<h3>➕ إضافة مدرسة جديدة</h3>
+
+<div class="input-group"><label>اسم المدرسة</label><input id="name"></div>
+<div class="input-group"><label>رقم الهاتف 1</label><input id="phone1" type="number"></div>
+<div class="input-group"><label>رقم الهاتف 2</label><input id="phone2" type="number"></div>
+<div class="input-group"><label>رقم الهاتف 3</label><input id="phone3" type="number"></div>
+<div class="input-group"><label>اسم المسؤول</label><input id="manager"></div>
+<div class="input-group"><label>عدد الطلاب</label><input id="students" type="number"></div>
+<div class="input-group"><label>رابط الموقع (Google Maps)</label><input id="location"></div>
+<div class="input-group"><label>العنوان</label><input id="address"></div>
 
 <div class="input-group">
-<label>اسم المدرسة</label>
-<input id="name">
+    <label>الفريق المسؤول</label>
+    <select id="teamSelect">
+        <option value="A">فريق A</option>
+        <option value="B">فريق B</option>
+    </select>
 </div>
 
-<div class="input-group">
-<label>رقم الهاتف 1</label>
-<input id="phone1">
-</div>
-
-<div class="input-group">
-<label>رقم الهاتف 2</label>
-<input id="phone2">
-</div>
-
-<div class="input-group">
-<label>رقم الهاتف 3</label>
-<input id="phone3">
-</div>
-
-<div class="input-group">
-<label>اسم المسؤول</label>
-<input id="manager">
-</div>
-
-<div class="input-group">
-<label>عدد الطلاب</label>
-<input id="students">
-</div>
-
-<div class="input-group">
-<label>رابط الموقع</label>
-<input id="location">
-</div>
-
-<div class="input-group">
-<label>العنوان</label>
-<input id="address">
-</div>
-
-<div class="input-group">
-<label>الفريق</label>
-<select id="team">
-  <option value="A">فريق A</option>
-  <option value="B">فريق B</option>
-</select>
-</div>
-
-<button onclick="add()">إضافة</button>
+<button onclick="addManual()">💾 حفظ المدرسة</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, push, get } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+import { getDatabase, ref, push, get, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSy...",
@@ -194,131 +96,152 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-// 🔒 حماية + صلاحيات
+
+// التحقق من الصلاحيات
 const role = localStorage.getItem("role");
-
-if(!role){
-  location.href = "index.html";
+if(!role || role !== "admin"){
+    alert("❌ هذه الصفحة للإدارة فقط");
+    location.href = "dashboard.html";
 }
 
-if(role !== "admin"){
-  alert("❌ فقط الادمن يضيف");
-  location.href = "dashboard.html";
+let teams = ["A", "B"]; // افتراضي
+
+// 1. جلب الفرق من قاعدة البيانات
+onValue(ref(db, 'settings/teams'), (snap) => {
+    if(snap.exists()){
+        teams = snap.val();
+    } else {
+        // إذا لم توجد فرق، نحفظ الافتراضية
+        set(ref(db, 'settings/teams'), teams);
+    }
+    updateTeamDropdowns();
+});
+
+function updateTeamDropdowns(){
+    // تحديث القائمة في نموذج الإضافة
+    const sel = document.getElementById("teamSelect");
+    sel.innerHTML = "";
+    teams.forEach(t => {
+        let opt = document.createElement("option");
+        opt.value = t;
+        opt.innerText = "فريق " + t;
+        sel.appendChild(opt);
+    });
+
+    // تحديث قائمة العرض في الأعلى
+    const list = document.getElementById("teamsListDisplay");
+    list.innerHTML = "";
+    teams.forEach(t => {
+        list.innerHTML += `
+        <div class="team-tag">
+            ${t} 
+            <span class="del-team" onclick="deleteTeam('${t}')">×</span>
+        </div>`;
+    });
 }
-////////////////////
-// ➕ إضافة يدوي
-////////////////////
-window.add = async function(){
 
-  const snap = await get(ref(db,'schools'));
-  const data = snap.val() || {};
-  const count = Object.keys(data).length + 1;
+// إضافة فريق جديد
+window.addNewTeam = async function(){
+    const name = document.getElementById("newTeamName").value.trim();
+    if(!name) return alert("اكتب اسم الفريق");
+    
+    if(teams.includes(name)){
+        return alert("هذا الفريق موجود مسبقاً");
+    }
 
-  const code = "S-" + String(count).padStart(3,'0');
-
-  await push(ref(db,'schools'),{
-    code,
-    name: document.getElementById("name").value,
-phone1: document.getElementById("phone1").value,
-phone2: document.getElementById("phone2").value,
-phone3: document.getElementById("phone3").value,
-    manager: document.getElementById("manager").value,
-    students: document.getElementById("students").value,
-    location: document.getElementById("location").value,
-    address: document.getElementById("address").value,
-    team: document.getElementById("team").value,
-    status:"new",
-    notes:"",
-    appointment:""
-  });
-
-  alert("✅ تمت الإضافة " + code);
+    teams.push(name);
+    await set(ref(db, 'settings/teams'), teams);
+    document.getElementById("newTeamName").value = "";
+    alert("✅ تمت إضافة الفريق بنجاح");
 }
 
-////////////////////
-// 📥 رفع Excel
-////////////////////
-window.goBack = function(){
-  location.href = "dashboard.html";
+// حذف فريق
+window.deleteTeam = async function(teamName){
+    if(!confirm(`هل تريد حذف الفريق ${teamName} من القائمة؟ (لن يحذف المدارس التابعة له)`)) return;
+    
+    teams = teams.filter(t => t !== teamName);
+    await set(ref(db, 'settings/teams'), teams);
 }
-window.upload = async function(){
 
-  const file = document.getElementById("file").files[0];
-
-  if(!file){
-    alert("اختار ملف");
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = async function(e){
-
-    const dataArr = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(dataArr, {type:'array'});
-
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet);
-
+// إضافة يدوية
+window.addManual = async function(){
     const snap = await get(ref(db,'schools'));
-    let data = snap.val() || {};
-    let count = Object.keys(data).length;
+    const data = snap.val() || {};
+    const count = Object.keys(data).length + 1;
+    const code = "S-" + String(count).padStart(3,'0');
 
-    for(const row of json){
-
-      count++;
-      const code = "S-" + String(count).padStart(3,'0');
-
-      await push(ref(db,'schools'),{
+    await push(ref(db,'schools'),{
         code,
-        name: row.name || "",
-phone1: String(row.phone1 || row.Phone1 || row.phone || ""),
-phone2: String(row.phone2 || row.Phone2 || ""),
-phone3: String(row.phone3 || row.Phone3 || ""),
-        manager: row.manager || "",
-        students: row.students || "",
-        location: row.location || "",
-        address: row.address || "",
-        team: row.team || "A",
+        name: document.getElementById("name").value,
+        phone1: document.getElementById("phone1").value,
+        phone2: document.getElementById("phone2").value,
+        phone3: document.getElementById("phone3").value,
+        manager: document.getElementById("manager").value,
+        students: document.getElementById("students").value,
+        location: document.getElementById("location").value,
+        address: document.getElementById("address").value,
+        team: document.getElementById("teamSelect").value,
         status:"new",
         notes:"",
         appointment:""
-      });
-    }
+    });
 
-    alert("🔥 تم رفع المدارس");
-  };
-
-  reader.readAsArrayBuffer(file);
+    alert("✅ تمت الإضافة: " + code);
+    // تفريغ الحقول
+    document.querySelectorAll("input").forEach(i => i.value = "");
 }
 
-////////////////////
-// 📥 تحميل نموذج
-////////////////////
+// رفع إكسل
+window.upload = async function(){
+    const file = document.getElementById("file").files[0];
+    if(!file) return alert("اختر ملفاً أولاً");
+
+    const reader = new FileReader();
+    reader.onload = async function(e){
+        const dataArr = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(dataArr, {type:'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        const snap = await get(ref(db,'schools'));
+        let data = snap.val() || {};
+        let count = Object.keys(data).length;
+
+        for(const row of json){
+            count++;
+            const code = "S-" + String(count).padStart(3,'0');
+            
+            // التأكد من أن الفريق الموجود في الملف متاح، وإلا نضع A
+            let fileTeam = row.team || "A";
+            if(!teams.includes(fileTeam)) fileTeam = "A";
+
+            await push(ref(db,'schools'),{
+                code,
+                name: row.name || "",
+                phone1: String(row.phone1 || ""),
+                phone2: String(row.phone2 || ""),
+                phone3: String(row.phone3 || ""),
+                manager: row.manager || "",
+                students: row.students || "",
+                location: row.location || "",
+                address: row.address || "",
+                team: fileTeam,
+                status:"new"
+            });
+        }
+        alert(`🔥 تم رفع ${json.length} مدرسة بنجاح`);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
 window.downloadSample = function(){
-
-const data = [
-  {
-    name: "مدرسة الأمل",
-    phone1: "0770000000",
-    phone2: "0780000000",
-    phone3: "0750000000",
-    manager: "أحمد",
-    students: 500,
-    team: "A",
-    location: "https://maps.google.com",
-    address: "كركوك"
-  }
-];
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Schools");
-  XLSX.writeFile(wb, "schools_sample.xlsx");
+    const ws = XLSX.utils.json_to_sheet([{name:"مدرسة الأمل", phone1:"0770000000", team:"A"}]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Schools");
+    XLSX.writeFile(wb, "sample.xlsx");
 }
 
+window.goBack = () => location.href = "dashboard.html";
 </script>
-
 </body>
 </html>

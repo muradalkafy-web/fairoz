@@ -23,7 +23,7 @@
         --st-called: #3498db;
         --st-appt: #f39c12;
         --st-visit: #9b59b6;
-        --st-deal: #2ecc71; /* أخضر للاتفاقات */
+        --st-deal: #2ecc71; 
         --st-reject: #e74c3c;
         --st-pending: #34495e;
     }
@@ -135,9 +135,9 @@
 
     .status-scroll {
         display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
-        scrollbar-width: none; /* Hide scrollbar Firefox */
+        scrollbar-width: none; 
     }
-    .status-scroll::-webkit-scrollbar { display: none; } /* Hide Chrome */
+    .status-scroll::-webkit-scrollbar { display: none; } 
 
     .filter-chip {
         background: #f0f2f5;
@@ -288,10 +288,9 @@
 <div class="controls">
     <div class="inputs-row">
         <input id="searchInput" type="text" placeholder="🔍 بحث (اسم، كود، هاتف)...">
+        <!-- تم جعل القائمة فارغة ليتم ملؤها بالجافاسكربت -->
         <select id="teamFilter">
-            <option value="all">كل الفرق</option>
-            <option value="A">فريق A</option>
-            <option value="B">فريق B</option>
+            <option value="all">جاري تحميل الفرق...</option>
         </select>
     </div>
 
@@ -352,10 +351,41 @@
     let isDeleteMode = false;
     let currentStatus = "all";
 
-    // جلب البيانات
+    // 1. جلب بيانات المدارس
     onValue(ref(db, 'schools'), (snap) => {
         allData = snap.val() || {};
         renderList();
+    });
+
+    // 2. 🔥 جلب الفرق ديناميكياً وتحديث القائمة تلقائياً
+    onValue(ref(db, 'settings/teams'), (snap) => {
+        const teams = snap.val();
+        const select = document.getElementById("teamFilter");
+        const currentSelection = select.value; // حفظ الاختيار الحالي للمستخدم
+
+        select.innerHTML = '<option value="all">كل الفرق</option>'; // إعادة تعيين
+
+        if (teams && Array.isArray(teams)) {
+            teams.forEach(team => {
+                const option = document.createElement("option");
+                option.value = team;
+                option.textContent = `فريق ${team}`;
+                select.appendChild(option);
+            });
+        } else {
+            // احتياط في حال عدم وجود فرق في قاعدة البيانات
+            ['A', 'B'].forEach(t => {
+                 const option = document.createElement("option");
+                option.value = t;
+                option.textContent = `فريق ${t}`;
+                select.appendChild(option);
+            });
+        }
+
+        // استعادة اختيار المستخدم إذا كان لا يزال موجوداً
+        if(currentSelection === 'all' || teams.includes(currentSelection)){
+            select.value = currentSelection;
+        }
     });
 
     document.getElementById("teamFilter").onchange = renderList;
