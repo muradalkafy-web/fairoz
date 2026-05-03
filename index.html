@@ -1,194 +1,225 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل الدخول</title>
+<title>تسجيل الدخول | نظام فيروز</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body {
-  margin:0;
-  font-family: Tahoma;
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+        background: linear-gradient(135deg, #0f9d58, #08663a);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-  background: linear-gradient(rgba(15,157,88,0.9), rgba(76,175,80,0.9)),
-              url('logo.png') no-repeat top center;
+    .login-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        text-align: center;
+        animation: fadeIn 0.5s ease-out;
+    }
 
-  background-size: 200px;
-  background-attachment: fixed;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
+    .logo-icon {
+        font-size: 50px;
+        color: #0f9d58;
+        margin-bottom: 15px;
+    }
 
-/* CARD */
-.box {
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    h2 { margin: 0 0 25px 0; color: #333; font-size: 22px; }
 
-  padding:25px;
-  border-radius:15px;
-  width:90%;
-  max-width:320px;
+    .input-group {
+        position: relative;
+        margin-bottom: 20px;
+        text-align: right;
+    }
 
-  box-shadow:0 10px 25px rgba(0,0,0,0.2);
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.3);
-}
+    .input-group i {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        color: #aaa;
+        transition: 0.3s;
+    }
 
-/* LOGO */
-.logo {
-  font-size:20px;
-  font-weight:bold;
-  color:white;
-  margin-bottom:15px;
-}
+    input {
+        width: 100%;
+        padding: 14px 45px 14px 15px;
+        border: 2px solid #eee;
+        border-radius: 12px;
+        font-family: 'Cairo';
+        font-size: 15px;
+        outline: none;
+        transition: 0.3s;
+    }
 
-/* INPUT */
-input {
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border-radius:10px;
-  border:none;
-  outline:none;
-  font-size:14px;
+    input:focus {
+        border-color: #0f9d58;
+    }
+    
+    input:focus + i { color: #0f9d58; }
 
-  background: rgba(255,255,255,0.2);
-  color:white;
-}
+    button {
+        width: 100%;
+        padding: 14px;
+        background: #0f9d58;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        font-family: 'Cairo';
+    }
 
-input::placeholder {
-  color:#eee;
-}
+    button:hover { background: #0b7a43; transform: scale(1.02); }
+    button:disabled { background: #ccc; cursor: not-allowed; }
 
-/* BUTTON */
-button {
-  width:100%;
-  padding:12px;
-  background:#0f9d58;
-  color:white;
-  border:none;
-  border-radius:10px;
-  font-size:15px;
-  cursor:pointer;
-}
-
-button:hover {
-  background:#0c7c45;
-}
-
-/* ERROR */
-.error {
-  color:#ffdddd;
-  font-size:13px;
-  margin-top:5px;
-}
+    .error-msg {
+        color: #e74c3c;
+        font-size: 13px;
+        margin-top: 15px;
+        min-height: 20px;
+        font-weight: 600;
+    }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="login-card">
+    <i class="fas fa-book-open logo-icon"></i>
+    <h2>نظام فيروز</h2>
 
-<div class="logo">📚 نظام فيروز</div>
+    <div class="input-group">
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <i class="fas fa-user"></i>
+    </div>
 
-<input id="name" placeholder="اسم المستخدم">
-<input id="password" type="password" placeholder="كلمة المرور">
+    <div class="input-group">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <i class="fas fa-lock"></i>
+    </div>
 
-<button onclick="login()">دخول</button>
-
-<div id="error" class="error"></div>
-
+    <button id="loginBtn" onclick="performLogin()">تسجيل الدخول</button>
+    <div id="errorBox" class="error-msg"></div>
 </div>
+
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, get, push } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "firoz-system.firebaseapp.com",
+        databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+        projectId: "firoz-system"
+    };
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "firoz-system.firebaseapp.com",
-  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
-  projectId: "firoz-system"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// 🔥 إنشاء admin تلقائي
-async function createAdminIfNotExists(){
-
-  const snap = await get(ref(db,'users'));
-
-  if(!snap.exists()){
-    await push(ref(db,'users'),{
-      username: "admin",
-      password: "1234",
-      role: "admin"
-    });
-
-    console.log("✅ تم إنشاء admin");
-  }
-}
-
-// 👇 شغله بعد ما تجهز Firebase
-createAdminIfNotExists();
-
-// 🔁 إذا مسجل مسبقاً
-if(localStorage.getItem("user")){
-  location.href = "dashboard.html";
-}
-
-// 🔐 تسجيل الدخول
-window.login = async function(){
-
-  const username = document.getElementById("name").value.trim();
-  const password = document.getElementById("password").value;
-
-  if(!username || !password){
-    showError("املأ كل الحقول");
-    return;
-  }
-
-  const snap = await get(ref(db,'users'));
-
-  if(!snap.exists()){
-    showError("لا يوجد مستخدمين");
-    return;
-  }
-
-  let foundUser = null;
-
-  Object.values(snap.val()).forEach(u=>{
-    if(u.username === username && u.password === password){
-      foundUser = u;
+    // دالة إنشاء الأدمن تلقائياً (تعمل مرة واحدة فقط)
+    async function initAdmin() {
+        const usersRef = ref(db, 'users');
+        const snapshot = await get(usersRef);
+        if (!snapshot.exists()) {
+            await push(usersRef, {
+                username: "admin",
+                password: "1234",
+                role: "admin"
+            });
+            console.log("✅ تم إنشاء حساب المدير الافتراضي");
+        }
     }
-  });
+    initAdmin();
 
-  if(!foundUser){
-    showError("اسم المستخدم أو كلمة المرور خطأ");
-    return;
-  }
+    // دالة تسجيل الدخول الرئيسية
+    window.performLogin = async function() {
+        const userIn = document.getElementById("username");
+        const passIn = document.getElementById("password");
+        const btn = document.getElementById("loginBtn");
+        const errBox = document.getElementById("errorBox");
 
-  localStorage.setItem("user", foundUser.username);
-  localStorage.setItem("role", foundUser.role);
+        const username = userIn.value.trim();
+        const password = passIn.value;
 
-  location.href="dashboard.html";
-}
+        // تنظيف الأخطاء السابقة
+        errBox.innerText = "";
+        
+        if (!username || !password) {
+            errBox.innerText = "⚠️ يرجى إدخال الاسم وكلمة المرور";
+            return;
+        }
 
-// Enter
-document.addEventListener("keypress", function(e){
-  if(e.key === "Enter"){
-    login();
-  }
-});
+        // تعطيل الزر لمنع التكرار
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
 
-function showError(msg){
-  document.getElementById("error").innerText = msg;
-}
+        try {
+            const snapshot = await get(ref(db, 'users'));
+            
+            if (!snapshot.exists()) {
+                throw new Error("لا يوجد مستخدمين في النظام");
+            }
 
+            let foundUser = null;
+
+            // البحث عن المستخدم
+            snapshot.forEach((childSnapshot) => {
+                const user = childSnapshot.val();
+                if (user.username === username && user.password === password) {
+                    foundUser = user;
+                }
+            });
+
+            if (foundUser) {
+                // ✅✅✅ الحفظ الصحيح للبيانات ✅✅✅
+                localStorage.setItem("role", foundUser.role);
+                localStorage.setItem("username", foundUser.username); // ضروري لسجل العمليات
+                localStorage.setItem("user", foundUser.username);     // للتوافق مع الكود القديم
+
+                // توجيه مباشر وسريع
+                window.location.href = "dashboard.html";
+            } else {
+                errBox.innerText = "❌ بيانات الدخول غير صحيحة";
+                btn.disabled = false;
+                btn.innerText = "تسجيل الدخول";
+            }
+
+        } catch (error) {
+            console.error(error);
+            errBox.innerText = "❌ حدث خطأ في الاتصال";
+            btn.disabled = false;
+            btn.innerText = "تسجيل الدخول";
+        }
+    }
+
+    // تفعيل زر Enter
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            performLogin();
+        }
+    });
 </script>
+
+</body>
+</html>

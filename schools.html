@@ -349,7 +349,9 @@
     let allData = {};
     let selectedIds = [];
     let isDeleteMode = false;
-    let currentStatus = "all";
+    
+    // 🔥 استرجاع الفلتر المحفوظ سابقاً (Persistence)
+    let currentStatus = sessionStorage.getItem("firoz_status") || "all";
 
     // 1. جلب بيانات المدارس
     onValue(ref(db, 'schools'), (snap) => {
@@ -361,8 +363,10 @@
     onValue(ref(db, 'settings/teams'), (snap) => {
         const teams = snap.val();
         const select = document.getElementById("teamFilter");
-        const currentSelection = select.value; // حفظ الاختيار الحالي للمستخدم
-
+        
+        // استرجاع الفريق المختار سابقاً
+        const savedTeam = sessionStorage.getItem("firoz_team") || "all";
+        
         select.innerHTML = '<option value="all">كل الفرق</option>'; // إعادة تعيين
 
         if (teams && Array.isArray(teams)) {
@@ -373,7 +377,6 @@
                 select.appendChild(option);
             });
         } else {
-            // احتياط في حال عدم وجود فرق في قاعدة البيانات
             ['A', 'B'].forEach(t => {
                  const option = document.createElement("option");
                 option.value = t;
@@ -382,13 +385,23 @@
             });
         }
 
-        // استعادة اختيار المستخدم إذا كان لا يزال موجوداً
-        if(currentSelection === 'all' || teams.includes(currentSelection)){
-            select.value = currentSelection;
+        // تطبيق الفريق المحفوظ
+        if(teams.includes(savedTeam)){
+            select.value = savedTeam;
+        } else {
+            select.value = "all";
+            sessionStorage.setItem("firoz_team", "all");
         }
+        
+        // تشغيل العرض الأولي
+        renderList();
     });
 
-    document.getElementById("teamFilter").onchange = renderList;
+    document.getElementById("teamFilter").onchange = function(e) {
+        sessionStorage.setItem("firoz_team", e.target.value); // حفظ اختيار الفريق
+        renderList();
+    };
+    
     document.getElementById("searchInput").oninput = renderList;
 
     // دالة العرض الرئيسية
@@ -468,6 +481,20 @@
             btn.classList.remove("delete-active");
             btn.innerHTML = `<i class="fas fa-trash-alt"></i>`;
         }
+        
+        // تحديث شكل أزرار الفلتر لتطابق الحالة المحفوظة
+        updateFilterButtonsUI();
+    }
+    
+    // دالة لتحديث شكل الأزرار بناءً على الفلتر النشط
+    function updateFilterButtonsUI() {
+        document.querySelectorAll(".filter-chip").forEach(btn => {
+            btn.classList.remove("active");
+            // التحقق مما إذا كان الزر يمثل الحالة الحالية
+            if(btn.getAttribute('onclick').includes(`'${currentStatus}'`)) {
+                btn.classList.add("active");
+            }
+        });
     }
 
     // --- منطق التصدير الذكي ---
@@ -478,8 +505,7 @@
         const q = clean(searchVal);
 
         let rows = [];
-        // هل نعرض السجل؟ نعم فقط إذا كان الفلتر "الكل"
-        const showHistory = (currentStatus === 'all');
+        const showHistory = true; 
 
         for(let key in allData){
             const item = allData[key];
@@ -489,6 +515,15 @@
             if(q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
             if(teamVal !== "all" && item.team !== teamVal) continue;
 
+            let historyText = "";
+            if(showHistory && item.history){
+                Object.values(item.history).forEach(h => {
+                    historyText += `[${h.time}] ${h.user || 'النظام'}: ${h.action}`;
+                    if(h.note) historyText += ` (${h.note})`;
+                    historyText += "\n";
+                });
+            }
+
             let rowObj = {
                 "الكود": item.code || key,
                 "المدرسة": item.name || "",
@@ -496,45 +531,36 @@
                 "المدير": item.manager || "",
                 "الفريق": item.team || "",
                 "العنوان": item.address || "",
-                "الحالة": translate(item.status)
+                "الحالة": translate(item.status),
+                "سجل العمليات الكامل": historyText
             };
-
-            // إضافة السجل فقط إذا طلبنا "الكل"
-            if(showHistory && item.history){
-                let histText = "";
-                Object.values(item.history).forEach(h => {
-                    histText += `[${h.time}] ${h.user}: ${h.action}\n`;
-                });
-                rowObj["سجل العمليات"] = histText;
-            }
 
             rows.push(rowObj);
         }
 
         if(rows.length === 0){ alert("لا توجد بيانات للتصدير!"); return; }
 
-        if(type === 'excel') doExcel(rows, showHistory);
-        else doWord(rows, showHistory);
+        if(type === 'excel') doExcel(rows, true);
+        else doWord(rows, true);
     }
 
     function doExcel(data, withHistory){
         const ws = XLSX.utils.json_to_sheet(data);
-        // عرض الأعمدة
-        let cols = [{wch:10}, {wch:30}, {wch:15}, {wch:15}, {wch:10}, {wch:30}, {wch:15}];
-        if(withHistory) cols.push({wch:60}); // عمود السجل عريض
+        let cols = [
+            {wch:10}, {wch:30}, {wch:15}, {wch:15}, {wch:10}, {wch:30}, {wch:15}
+        ];
+        if(withHistory) cols.push({wch:80});
         ws['!cols'] = cols;
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Report");
-        XLSX.writeFile(wb, `Firoz_${currentStatus}_${Date.now()}.xlsx`);
+        XLSX.writeFile(wb, `Firoz_Report_${Date.now()}.xlsx`);
     }
 
     async function doWord(data, withHistory){
         const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, HeadingLevel, AlignmentType } = docx;
         
         const headers = Object.keys(data[0]);
-        
-        // بناء الصفوف
         const tableRows = [
             new TableRow({
                 children: headers.map(h => new TableCell({
@@ -573,6 +599,8 @@
 
     window.setFilter = function(status, btn){
         currentStatus = status;
+        sessionStorage.setItem("firoz_status", status); // 🔥 حفظ الحالة في الذاكرة
+        
         document.querySelectorAll(".filter-chip").forEach(b=>b.classList.remove("active"));
         btn.classList.add("active");
         renderList();
@@ -583,7 +611,6 @@
             isDeleteMode = true;
             selectedIds = [];
         } else {
-            // تنفيذ الحذف
             if(selectedIds.length === 0) { alert("اختر عناصر أولاً"); return; }
             if(!confirm(`حذف ${selectedIds.length} عنصر نهائياً؟`)) return;
             
@@ -605,7 +632,9 @@
         renderList();
     }
 
-    window.goBack = () => history.back();
+   window.goBack = () => {
+  location.replace("dashboard.html");
+};
 
     function translate(s){
         const m = {"new":"جديدة","called":"تم الاتصال","appointment":"موعد","visited":"زيارة","deal":"اتفاق","reject":"مرفوض","pending":"انتظار"};

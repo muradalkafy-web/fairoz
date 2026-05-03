@@ -217,12 +217,23 @@
         font-size: 13px;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start; /* لمحاذاة النص بشكل أفضل */
+        gap: 10px;
     }
     .history-item:last-child { border-bottom: none; }
-    .h-time { color: #999; font-size: 11px; }
-    .h-action { font-weight: bold; color: #444; }
-    .h-note { color: #666; display: block; margin-top: 3px; font-style: italic;}
+    
+    .h-details { flex: 1; }
+    .h-action { font-weight: bold; color: #444; display:block; }
+    .h-user { font-size: 11px; color: var(--primary); font-weight: bold; margin-top:2px; display:inline-block; background:#e8f5e9; padding:2px 6px; border-radius:4px;}
+    .h-note { color: #666; display: block; margin-top: 4px; font-style: italic; font-size:12px;}
+    
+    .h-time { 
+        color: #999; 
+        font-size: 11px; 
+        white-space: nowrap; 
+        text-align: left;
+        min-width: 80px;
+    }
 
     /* FLOATING WHATSAPP */
     .float-wa {
@@ -396,7 +407,7 @@
 
         <!-- CARD 3: HISTORY -->
         <div class="card history-card">
-            <div class="section-title"><i class="fas fa-history"></i> سجل العمليات</div>
+            <div class="section-title"><i class="fas fa-history"></i> سجل العمليات والمثبتين</div>
             <ul class="history-list">
                 ${renderHistory(s.history)}
             </ul>
@@ -411,11 +422,15 @@
         
         let hHtml = "";
         Object.values(hist).reverse().forEach(h => {
+            // عرض اسم المستخدم إذا كان موجوداً
+            const userBadge = h.user ? `<span class="h-user"><i class="fas fa-user"></i> ${h.user}</span>` : '';
+            
             hHtml += `
             <li class="history-item">
-                <div>
-                    <div class="h-action">${h.action}</div>
-                    ${h.note ? `<span class="h-note">${h.note}</span>` : ''}
+                <div class="h-details">
+                    <span class="h-action">${h.action}</span>
+                    ${userBadge}
+                    ${h.note ? `<span class="h-note">📝 ${h.note}</span>` : ''}
                 </div>
                 <div class="h-time">${h.time}</div>
             </li>`;
@@ -458,22 +473,23 @@
         }).catch(err => alert("خطأ: " + err.message));
     }
 
+    // 🔥🔥 التعديل الأساسي هنا: حفظ اسم المستخدم (المثبت) 🔥🔥
     window.updateStatus = function(newStatus){
         const note = document.getElementById("noteInput").value;
-        if(!note && newStatus === 'deal') {
-           // يمكن إضافة تحقق إضافي هنا
-        }
-
+        
+        // 1. جلب اسم المستخدم من التخزين المحلي (يجب أن يكون محفوظاً عند تسجيل الدخول)
+        const currentUser = localStorage.getItem("username") || "غير معروف";
         const now = new Date().toLocaleString('ar-IQ');
         
-        // تحديث الحالة
+        // 2. تحديث الحالة الرئيسية للمدرسة
         update(schoolRef, { status: newStatus });
 
-        // إضافة للسجل
+        // 3. إضافة للسجل مع اسم المستخدم
         push(ref(db, `schools/${schoolId}/history`), {
             action: translate(newStatus),
             note: note,
             time: now,
+            user: currentUser, // 🔥 حفظ اسم المثبت هنا
             timestamp: Date.now()
         });
 

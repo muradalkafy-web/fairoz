@@ -1,233 +1,570 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الإحصائيات</title>
+<title>الإحصائيات الذكية | فيروز</title>
 
+<!-- مكتبات وخطوط -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body {margin:0;font-family:Tahoma;background:#f4f7f6;}
+    :root {
+        --primary: #0f9d58;
+        --bg: #f0f2f5;
+        --card-bg: #ffffff;
+        --text: #2c3e50;
+        --shadow: 0 4px 15px rgba(0,0,0,0.05);
+        
+        /* ألوان الحالات */
+        --st-new: #95a5a6;
+        --st-called: #3498db;
+        --st-appt: #f39c12;
+        --st-visit: #9b59b6;
+        --st-deal: #2ecc71;
+        --st-reject: #e74c3c;
+        --st-pending: #34495e;
+    }
 
-header {
-  background:#0f9d58;
-  color:white;
-  padding:15px;
-  text-align:center;
-  font-size:18px;
-}
+    body {
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 40px;
+    }
 
-.container {padding:10px;}
+    header {
+        background: linear-gradient(135deg, var(--primary), #0b7a43);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.grid {
-  display:grid;
-  grid-template-columns: repeat(2,1fr);
-  gap:10px;
-}
+    .back-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 35px; height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
 
-.card {
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  cursor:pointer;
-  transition:0.2s;
-}
-.card:hover {transform:scale(1.05);}
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
 
-.big {font-size:20px;font-weight:bold;color:#0f9d58;}
+    /* TABS */
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+    }
 
-.full {
-  margin-top:10px;
-  background:white;
-  padding:15px;
-  border-radius:12px;
-}
+    .tab-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: transparent;
+        font-family: 'Cairo';
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: 0.3s;
+        color: #777;
+    }
 
-.green {color:#4caf50;}
-.red {color:#f44336;}
-.orange {color:#ff9800;}
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 10px rgba(15,157,88,0.3);
+    }
+
+    /* SECTIONS */
+    .section { display: none; animation: fadeIn 0.4s; }
+    .section.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* STATS GRID */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+
+    .stat-icon {
+        font-size: 24px;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    .stat-num { font-size: 28px; font-weight: 800; display: block; margin-bottom: 5px; }
+    .stat-lbl { font-size: 13px; color: #777; font-weight: 600; }
+
+    /* CHARTS AREA */
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .chart-box {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+    }
+
+    /* EMPLOYEE TABLE */
+    .emp-table-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+    }
+
+    th { background: #f8f9fa; color: #555; font-size: 13px; }
+    td { font-size: 14px; font-weight: 600; }
+
+    .rank-1 { color: #f1c40f; } /* ذهبي */
+    .rank-2 { color: #95a5a6; } /* فضي */
+    .rank-3 { color: #d35400; } /* برونزي */
+
+    .progress-bar {
+        background: #eee;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100px;
+        margin: 0 auto;
+    }
+    .progress-fill { height: 100%; background: var(--st-deal); }
+
+    /* INSIGHTS */
+    .insight-box {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        border-right: 5px solid var(--primary);
+        margin-top: 20px;
+    }
+    .insight-title { font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
 </style>
 </head>
 
 <body>
 
-<header>📊 الإحصائيات الاحترافية</header>
+<header>
+    <button onclick="goBack()" class="back-btn"><i class="fas fa-arrow-right"></i></button>
+    <div><i class="fas fa-chart-pie"></i> مركز المعلومات</div>
+    <div style="width:35px"></div> <!-- Spacer -->
+</header>
 
 <div class="container">
 
-<!-- 🔢 الإحصائيات الأساسية -->
-<div class="grid">
-  <div class="card" onclick="openList('all')">📚 المدارس <div id="total" class="big">0</div></div>
-  <div class="card" onclick="openList('called')">☎️ اتصالات <div id="calls" class="big">0</div></div>
-  <div class="card" onclick="openList('visited')">🚗 زيارات <div id="visits" class="big">0</div></div>
-  <div class="card" onclick="openList('deal')">🤝 اتفاق <div id="deals" class="big green">0</div></div>
-  <div class="card" onclick="openList('reject')">❌ رفض <div id="reject" class="big red">0</div></div>
-  <div class="card" onclick="openList('pending')">⏳ انتظار <div id="pending" class="big orange">0</div></div>
-</div>
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('schools')">🏫 إحصائيات المدارس</button>
+        <button class="tab-btn" onclick="switchTab('employees')">👥 أداء الموظفين</button>
+    </div>
 
-<!-- 📈 النسب -->
-<div class="full">
-  <h3>📈 النسب</h3>
-  <p>نجاح: <span id="successRate"></span></p>
-  <p>اتصال: <span id="callRate"></span></p>
-  <p>رفض: <span id="rejectRate"></span></p>
-</div>
+    <!-- SECTION 1: SCHOOLS -->
+    <div id="sec-schools" class="section active">
+        
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="openList('all')" style="border-bottom: 4px solid #333;">
+                <div class="stat-icon" style="color:#333"><i class="fas fa-database"></i></div>
+                <span class="stat-num" id="s-total">0</span>
+                <span class="stat-lbl">إجمالي المدارس</span>
+            </div>
+            <div class="stat-card" onclick="openList('deal')" style="border-bottom: 4px solid var(--st-deal);">
+                <div class="stat-icon" style="color:var(--st-deal)"><i class="fas fa-handshake"></i></div>
+                <span class="stat-num" id="s-deal">0</span>
+                <span class="stat-lbl">اتفاقات</span>
+            </div>
+            <div class="stat-card" onclick="openList('appointment')" style="border-bottom: 4px solid var(--st-appt);">
+                <div class="stat-icon" style="color:var(--st-appt)"><i class="fas fa-calendar-check"></i></div>
+                <span class="stat-num" id="s-appt">0</span>
+                <span class="stat-lbl">مواعيد</span>
+            </div>
+            <div class="stat-card" onclick="openList('visited')" style="border-bottom: 4px solid var(--st-visit);">
+                <div class="stat-icon" style="color:var(--st-visit)"><i class="fas fa-car"></i></div>
+                <span class="stat-num" id="s-visit">0</span>
+                <span class="stat-lbl">زيارات</span>
+            </div>
+            <div class="stat-card" onclick="openList('called')" style="border-bottom: 4px solid var(--st-called);">
+                <div class="stat-icon" style="color:var(--st-called)"><i class="fas fa-phone"></i></div>
+                <span class="stat-num" id="s-called">0</span>
+                <span class="stat-lbl">اتصالات</span>
+            </div>
+            <div class="stat-card" onclick="openList('reject')" style="border-bottom: 4px solid var(--st-reject);">
+                <div class="stat-icon" style="color:var(--st-reject)"><i class="fas fa-times-circle"></i></div>
+                <span class="stat-num" id="s-reject">0</span>
+                <span class="stat-lbl">مرفوض</span>
+            </div>
+             <div class="stat-card" onclick="openList('pending')" style="border-bottom: 4px solid var(--st-pending);">
+                <div class="stat-icon" style="color:var(--st-pending)"><i class="fas fa-clock"></i></div>
+                <span class="stat-num" id="s-pending">0</span>
+                <span class="stat-lbl">انتظار</span>
+            </div>
+        </div>
 
-<!-- 🧠 إحصائيات ذكية -->
-<div class="full">
-  <h3>🧠 إحصائيات متقدمة</h3>
-  <p>🏫 أكبر مدرسة: <span id="topSchool"></span></p>
-  <p>👥 أكثر فريق نشاط: <span id="topTeam"></span></p>
-</div>
+        <!-- Charts -->
+        <div class="charts-row">
+            <div class="chart-box">
+                <h3 style="margin-top:0;font-size:16px;color:#555;">📊 توزيع الحالات</h3>
+                <canvas id="schoolPieChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3 style="margin-top:0;font-size:16px;color:#555;">📈 funnel التحويل</h3>
+                <canvas id="schoolBarChart"></canvas>
+            </div>
+        </div>
 
-<!-- 📊 charts -->
-<div class="full">
-  <h3>📊 توزيع الحالات</h3>
-  <canvas id="pieChart"></canvas>
-</div>
+        <div class="insight-box">
+            <div class="insight-title"><i class="fas fa-lightbulb" style="color:#f39c12"></i> تحليل الأداء العام</div>
+            <p id="school-insight" style="margin:0;line-height:1.6">جاري التحليل...</p>
+        </div>
+    </div>
 
-<div class="full">
-  <h3>📈 الأداء</h3>
-  <canvas id="barChart"></canvas>
-</div>
+    <!-- SECTION 2: EMPLOYEES -->
+    <div id="sec-employees" class="section">
+        
+        <div class="chart-box" style="margin-bottom:20px;">
+            <h3 style="margin-top:0;font-size:16px;color:#555;">🏆 ترتيب المثبتين (الأداء)</h3>
+            <div class="emp-table-container">
+                <table id="empTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الموظف</th>
+                            <th>إجمالي العمليات</th>
+                            <th>اتفاقات</th>
+                            <th>نسبة النجاح</th>
+                            <th>التقييم</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- سيتم التعبئة بالجافاسكربت -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<div class="full">
-  <h3>💡 تحليل</h3>
-  <p id="tips"></p>
-</div>
+        <div class="charts-row">
+            <div class="chart-box">
+                <h3 style="margin-top:0;font-size:16px;color:#555;">📊 مقارنة الأداء (اتفاقات vs محاولات)</h3>
+                <canvas id="empCompareChart"></canvas>
+            </div>
+        </div>
+
+    </div>
 
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "firoz-system.firebaseapp.com",
-  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
-  projectId: "firoz-system"
+    apiKey: "AIzaSy...",
+    authDomain: "firoz-system.firebaseapp.com",
+    databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+    projectId: "firoz-system"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🔒 حماية
-if(!localStorage.getItem("user")) location.href="index.html";
-const role = localStorage.getItem("role");
-if(role !== "admin" && role !== "accountant"){
-  location.href="dashboard.html";
+// حماية الصفحة
+if(!localStorage.getItem("role")) location.href="index.html";
+
+let schoolPie, schoolBar, empChart;
+
+// تبديل التبويبات
+window.switchTab = function(tabName) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('sec-' + tabName).classList.add('active');
+    event.target.classList.add('active');
 }
 
-let pieChart, barChart;
-
+// 🔥 دالة التوجيه للفلترة
 window.openList = function(status){
-  location.href = "schools.html?status=" + status;
+    if(status === 'all') {
+        // إذا كان الكل، نذهب للصفحة بدون فلتر حالة
+        location.href = "schools.html";
+    } else {
+        // توجيه مع فلتر الحالة
+        location.href = "schools.html?status=" + status;
+    }
 }
+
+window.goBack = () => {
+  location.replace("dashboard.html");
+};
 
 onValue(ref(db,'schools'), (snap)=>{
+    const data = snap.val() || {};
+    
+    // --- متغيرات العد (تم تصحيح appointment) ---
+    let stats = { total:0, called:0, appointment:0, visited:0, deal:0, reject:0, pending:0, new:0 };
+    let employees = {}; 
 
-  const data = snap.val() || {};
+    for(let id in data){
+        const s = data[id];
+        if(s.deleted) continue;
 
-  let total=0, calls=0, visits=0, deals=0, reject=0, pending=0;
+        stats.total++;
+        // توحيد صيغة الحالة
+        const st = (s.status || "new").toLowerCase().trim();
+        
+        // العد الصحيح للحالات
+        if(stats[st] !== undefined) {
+            stats[st]++;
+        } else {
+            stats.new++; 
+        }
 
-  let topSchool = {name:"-", students:0};
-  let teams = {};
-
- for(let id in data){
-  const s = data[id];
-
-if(s.deleted) continue;
-  total++;
-
-const status = (s.status || "").trim().toLowerCase();
-
-if(status==="called") calls++;
-if(status==="visited") visits++;
-if(status==="deal") deals++;
-if(status==="reject") reject++;
-if(status==="pending") pending++;
-
-    // 🔥 أكبر مدرسة
-    const students = Number(s.students || 0);
-    if(students > topSchool.students){
-      topSchool = {name: s.name, students};
+        // --- تحليل الموظفين من السجل (History) ---
+        if(s.history){
+            Object.values(s.history).forEach(h => {
+                const user = h.user || "غير معروف";
+                if(!employees[user]) {
+                    employees[user] = { name: user, actions: 0, deals: 0, calls: 0 };
+                }
+                
+                employees[user].actions++;
+                
+                if(h.action.includes("اتفاق") || h.action === "deal") {
+                    employees[user].deals++;
+                }
+                if(h.action.includes("اتصال") || h.action === "called") {
+                    employees[user].calls++;
+                }
+            });
+        }
     }
 
-    // 🔥 نشاط الفرق
-    if(!teams[s.team]) teams[s.team]=0;
-    teams[s.team]++;
-  }
+    // تحديث الواجهة بالأرقام المصححة
+    document.getElementById("s-total").innerText = stats.total;
+    document.getElementById("s-called").innerText = stats.called;
+    document.getElementById("s-appt").innerText = stats.appointment; // هنا التصحيح
+    document.getElementById("s-visit").innerText = stats.visited;
+    document.getElementById("s-deal").innerText = stats.deal;
+    document.getElementById("s-reject").innerText = stats.reject;
+    document.getElementById("s-pending").innerText = stats.pending;
 
-  // أفضل فريق
-  let topTeam = "-";
-  let max = 0;
-  for(let t in teams){
-    if(teams[t] > max){
-      max = teams[t];
-      topTeam = t;
-    }
-  }
+    // Insight Logic
+    const successRate = stats.total ? ((stats.deal / stats.total) * 100).toFixed(1) : 0;
+    const rejectRate = stats.total ? ((stats.reject / stats.total) * 100).toFixed(1) : 0;
+    
+    let msg = "";
+    if(successRate > 20) msg = "🔥 أداء ممتاز! نسبة الاتفاقات مرتفعة.";
+    else if(rejectRate > 30) msg = "⚠️ انتبه: نسبة الرفض عالية جداً.";
+    else if(stats.appointment > stats.visited) msg = "💡 لديك مواعيد كثيرة لم تتحول لزيارات.";
+    else msg = "📈 الأداء متوسط. حاول زيادة الزيارات.";
+    
+    document.getElementById("school-insight").innerText = `${msg} (نسبة النجاح: ${successRate}%)`;
 
-  document.getElementById("total").innerText = total;
-  document.getElementById("calls").innerText = calls;
-  document.getElementById("visits").innerText = visits;
-  document.getElementById("deals").innerText = deals;
-  document.getElementById("reject").innerText = reject;
-  document.getElementById("pending").innerText = pending;
+    // Charts Update
+    if(schoolPie) schoolPie.destroy();
+    schoolPie = new Chart(document.getElementById('schoolPieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['اتفاق','موعد','زيارة','اتصال','رفض','انتظار','جديد'],
+            datasets: [{
+                data: [stats.deal, stats.appointment, stats.visited, stats.called, stats.reject, stats.pending, stats.new],
+                backgroundColor: ['#2ecc71','#f39c12','#9b59b6','#3498db','#e74c3c','#34495e','#95a5a6']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
 
-  document.getElementById("topSchool").innerText = topSchool.name + " ("+topSchool.students+")";
-  document.getElementById("topTeam").innerText = topTeam;
+    if(schoolBar) schoolBar.destroy();
+    schoolBar = new Chart(document.getElementById('schoolBarChart'), {
+        type: 'bar',
+        data: {
+            labels: ['اتصال','موعد','زيارة','اتفاق'],
+            datasets: [{
+                label: 'عدد العمليات',
+                data: [stats.called, stats.appointment, stats.visited, stats.deal],
+                backgroundColor: ['#3498db','#f39c12','#9b59b6','#2ecc71'],
+                borderRadius: 5
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
 
-  const success = total ? (deals/total*100).toFixed(1) : 0;
-  const callRate = total ? (calls/total*100).toFixed(1) : 0;
-  const rej = total ? (reject/total*100).toFixed(1) : 0;
-
-  document.getElementById("successRate").innerText = success + "%";
-  document.getElementById("callRate").innerText = callRate + "%";
-  document.getElementById("rejectRate").innerText = rej + "%";
-
-  if(pieChart) pieChart.destroy();
-  pieChart = new Chart(document.getElementById("pieChart"), {
-    type: 'pie',
-    data: {
-      labels: ['اتصال','زيارة','اتفاق','رفض','انتظار'],
-      datasets: [{
-        data: [calls, visits, deals, reject, pending],
-        backgroundColor: ['#2196f3','#9c27b0','#4caf50','#f44336','#ff9800']
-      }]
-    }
-  });
-
-  if(barChart) barChart.destroy();
-  barChart = new Chart(document.getElementById("barChart"), {
-    type: 'bar',
-    data: {
-      labels: ['اتصال','زيارة','اتفاق','رفض','انتظار'],
-      datasets: [{
-        label: 'عدد العمليات',
-        data: [calls, visits, deals, reject, pending],
-        backgroundColor: '#0f9d58'
-      }]
-    }
-  });
-
-  let tip = "";
-  if(rej > 40){
-    tip = "⚠️ نسبة الرفض عالية، لازم تغير أسلوب البيع";
-  } else if(success > 20){
-    tip = "🔥 أداء ممتاز";
-  } else {
-    tip = "📈 ركز على الزيارات والمتابعة";
-  }
-
-  document.getElementById("tips").innerText = tip;
-
+    // تحديث جدول الموظفين
+    updateEmployeeUI(employees);
 });
+function updateSchoolUI(stats){
+    document.getElementById("s-total").innerText = stats.total;
+    document.getElementById("s-called").innerText = stats.called;
+    document.getElementById("s-appt").innerText = stats.appt;
+    document.getElementById("s-visit").innerText = stats.visit;
+    document.getElementById("s-deal").innerText = stats.deal;
+    document.getElementById("s-reject").innerText = stats.reject;
+    document.getElementById("s-pending").innerText = stats.pending;
+
+    // Insight Logic
+    const successRate = stats.total ? ((stats.deal / stats.total) * 100).toFixed(1) : 0;
+    const rejectRate = stats.total ? ((stats.reject / stats.total) * 100).toFixed(1) : 0;
+    
+    let msg = "";
+    if(successRate > 20) msg = "🔥 أداء ممتاز! نسبة الاتفاقات مرتفعة.";
+    else if(rejectRate > 30) msg = "⚠️ انتبه: نسبة الرفض عالية جداً. راجع جودة القائمة أو أسلوب الحوار.";
+    else if(stats.appt > stats.visit) msg = "💡 لديك مواعيد كثيرة لم تتحول لزيارات. ركز على المتابعة.";
+    else msg = "📈 الأداء متوسط. حاول زيادة عدد الزيارات الميدانية.";
+    
+    document.getElementById("school-insight").innerText = `${msg} (نسبة النجاح الكلية: ${successRate}%)`;
+
+    // Charts
+    if(schoolPie) schoolPie.destroy();
+    schoolPie = new Chart(document.getElementById('schoolPieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['اتفاق','موعد','زيارة','اتصال','رفض','انتظار','جديد'],
+            datasets: [{
+                data: [stats.deal, stats.appt, stats.visit, stats.called, stats.reject, stats.pending, stats.new],
+                backgroundColor: ['#2ecc71','#f39c12','#9b59b6','#3498db','#e74c3c','#34495e','#95a5a6']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    if(schoolBar) schoolBar.destroy();
+    schoolBar = new Chart(document.getElementById('schoolBarChart'), {
+        type: 'bar',
+        data: {
+            labels: ['اتصال','موعد','زيارة','اتفاق'],
+            datasets: [{
+                label: 'عدد العمليات',
+                data: [stats.called, stats.appt, stats.visit, stats.deal],
+                backgroundColor: ['#3498db','#f39c12','#9b59b6','#2ecc71'],
+                borderRadius: 5
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+}
+
+function updateEmployeeUI(emps){
+    const tbody = document.querySelector("#empTable tbody");
+    tbody.innerHTML = "";
+
+    // تحويل الكائن لمصفوفة للترتيب
+    let empArray = Object.values(emps);
+    
+    // ترتيب حسب عدد الاتفاقات (الأفضل أولاً)
+    empArray.sort((a,b) => b.deals - a.deals);
+
+    // رسم الجدول
+    empArray.forEach((emp, index) => {
+        const rate = emp.actions > 0 ? ((emp.deals / emp.actions) * 100).toFixed(1) : 0;
+        let rankIcon = "";
+        if(index===0) rankIcon = '<i class="fas fa-medal rank-1"></i>';
+        else if(index===1) rankIcon = '<i class="fas fa-medal rank-2"></i>';
+        else if(index===2) rankIcon = '<i class="fas fa-medal rank-3"></i>';
+        else rankIcon = (index+1);
+
+        const row = `
+        <tr>
+            <td>${rankIcon}</td>
+            <td>${emp.name}</td>
+            <td>${emp.actions}</td>
+            <td style="color:var(--st-deal);font-weight:bold">${emp.deals}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:5px;justify-content:center">
+                    <span>${rate}%</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${rate}%"></div></div>
+                </div>
+            </td>
+            <td>${rate > 15 ? '⭐ ممتاز' : (rate > 5 ? '✅ جيد' : '⚠️ ضعيف')}</td>
+        </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+
+    if(empArray.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6'>لا توجد بيانات للموظفين بعد</td></tr>";
+    }
+
+    // Employee Chart
+    if(empChart) empChart.destroy();
+    
+    // نأخذ أفضل 5 موظفين للرسم البياني حتى لا يزحم
+    const top5 = empArray.slice(0, 5);
+    
+    empChart = new Chart(document.getElementById('empCompareChart'), {
+        type: 'bar',
+        data: {
+            labels: top5.map(e => e.name),
+            datasets: [
+                {
+                    label: 'اتفاقات',
+                    data: top5.map(e => e.deals),
+                    backgroundColor: '#2ecc71'
+                },
+                {
+                    label: 'محاولات (اتصال+زيارة)',
+                    data: top5.map(e => e.calls + (e.actions - e.calls)), // تقريب
+                    backgroundColor: '#3498db'
+                }
+            ]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+}
 
 </script>
 

@@ -1,160 +1,367 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة المستخدمين</title>
+<title>إدارة المستخدمين | فيروز</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body {margin:0;font-family:Tahoma;background:#f4f7f6;}
+    :root {
+        --primary: #0f9d58;
+        --primary-dark: #0b7a43;
+        --bg: #f0f2f5;
+        --white: #ffffff;
+        --danger: #e74c3c;
+        --info: #3498db;
+        --text: #2c3e50;
+    }
 
-header {
-  background:#0f9d58;color:white;padding:15px;text-align:center;font-size:18px;
-}
+    body {
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 40px;
+    }
 
-.container {padding:10px;}
+    header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(15, 157, 88, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
 
-.card {
-  background:white;padding:15px;border-radius:12px;margin-bottom:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
+    .container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
 
-input, select {
-  width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;
-}
+    .card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
 
-button {
-  width:100%;padding:10px;background:#0f9d58;color:white;border:none;
-  border-radius:8px;margin-top:5px;cursor:pointer;
-}
+    .card:hover { transform: translateY(-2px); }
 
-.delete {background:#f44336;}
-.edit {background:#2196f3;}
+    h3 {
+        margin-top: 0;
+        color: var(--primary);
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-.user {
-  border-bottom:1px solid #eee;padding:10px 0;
-}
+    /* Form Styles */
+    .form-group { margin-bottom: 15px; }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+        font-family: 'Cairo';
+        font-size: 14px;
+        transition: 0.3s;
+        background: #fafafa;
+    }
+
+    input:focus, select:focus {
+        border-color: var(--primary);
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(15, 157, 88, 0.1);
+    }
+
+    .btn-main {
+        width: 100%;
+        padding: 14px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-main:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(15,157,88,0.3); }
+
+    /* User List Styles */
+    .user-list { display: flex; flex-direction: column; gap: 15px; }
+
+    .user-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .user-card::before {
+        content: '';
+        position: absolute;
+        right: 0; top: 0; bottom: 0;
+        width: 5px;
+        background: #ddd;
+    }
+    .user-card[data-role="admin"]::before { background: var(--danger); }
+    .user-card[data-role="operator"]::before { background: var(--info); }
+    .user-card[data-role="accountant"]::before { background: #f39c12; }
+
+    .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-name { font-weight: 700; font-size: 16px; }
+    
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+        background: #eee;
+        color: #555;
+    }
+    .badge.admin { background: #fdecea; color: var(--danger); }
+    .badge.operator { background: #ebf5fb; color: var(--info); }
+    .badge.accountant { background: #fef5e7; color: #f39c12; }
+
+    .actions-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .btn-sm {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        font-family: 'Cairo';
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .btn-pass { background: #e0e0e0; color: #333; }
+    .btn-pass:hover { background: #d0d0d0; }
+
+    .btn-del { background: #fdecea; color: var(--danger); }
+    .btn-del:hover { background: #fbd5d5; }
+
+    .pass-input-mini {
+        padding: 8px !important;
+        font-size: 12px !important;
+        margin-bottom: 5px !important;
+    }
+
+    @media (min-width: 600px) {
+        .user-card { flex-direction: row; align-items: center; justify-content: space-between; }
+        .user-actions { width: 250px; display: flex; flex-direction: column; gap: 5px; }
+    }
 </style>
 </head>
 
 <body>
 
-<header>👥 إدارة المستخدمين</header>
+<header>
+    <i class="fas fa-users-cog"></i> إدارة المستخدمين والمثبتين
+</header>
 
 <div class="container">
 
-<!-- إضافة مستخدم -->
-<div class="card">
-<h3>➕ إضافة مستخدم</h3>
+    <!-- إضافة مستخدم -->
+    <div class="card">
+        <h3><i class="fas fa-user-plus"></i> إضافة مستخدم جديد</h3>
+        
+        <div class="form-group">
+            <label>اسم المستخدم (الاسم الظاهر في السجل)</label>
+            <input id="username" type="text" placeholder="مثلاً: أحمد محمد">
+        </div>
 
-<input id="username" placeholder="اسم المستخدم">
-<input id="password" placeholder="كلمة المرور">
+        <div class="form-group">
+            <label>كلمة المرور</label>
+            <input id="password" type="text" placeholder="اختر كلمة مرور قوية">
+        </div>
 
-<select id="role">
-  <option value="admin">Admin</option>
-  <option value="accountant">محاسب</option>
-  <option value="operator">مثبت</option>
-</select>
+        <div class="form-group">
+            <label>صلاحية الدخول</label>
+            <select id="role">
+                <option value="admin">Admin (مدير النظام)</option>
+                <option value="operator">Operator (مثبت مدارس)</option>
+                <option value="accountant">Accountant (محاسب)</option>
+            </select>
+        </div>
 
-<button onclick="addUser()">إضافة</button>
-</div>
+        <button onclick="addUser()" class="btn-main">
+            <i class="fas fa-save"></i> حفظ المستخدم
+        </button>
+    </div>
 
-<!-- قائمة المستخدمين -->
-<div class="card">
-<h3>📋 المستخدمين</h3>
-<div id="list"></div>
-</div>
+    <!-- قائمة المستخدمين -->
+    <div class="card">
+        <h3><i class="fas fa-list"></i> قائمة المستخدمين النشطين</h3>
+        <div id="list" class="user-list">
+            <div style="text-align:center; color:#999; padding:20px;">جاري تحميل البيانات...</div>
+        </div>
+    </div>
 
 </div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update } 
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "firoz-system.firebaseapp.com",
+        databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
+        projectId: "firoz-system"
+    };
 
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "firoz-system.firebaseapp.com",
-  databaseURL: "https://firoz-system-default-rtdb.firebaseio.com",
-  projectId: "firoz-system"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    // 🔒 حماية الصفحة
+    if(localStorage.getItem("role") !== "admin"){
+        alert("❌ غير مسموح بالدخول لهذه الصفحة");
+        location.href = "dashboard.html";
+    }
 
-// 🔒 فقط الادمن يدخل
-if(localStorage.getItem("role") !== "admin"){
-  location.href="dashboard.html";
-}
+    // عرض المستخدمين
+    onValue(ref(db,'users'), snap => {
+        const data = snap.val() || {};
+        const listContainer = document.getElementById("list");
+        
+        // 💾 حفظ نسخة محلية (Local Storage Backup)
+        localStorage.setItem("users_backup", JSON.stringify(data));
 
-// عرض المستخدمين
-onValue(ref(db,'users'), snap=>{
-  const data = snap.val() || {};
-  let html = "";
+        let html = "";
 
-  for(let id in data){
-    const u = data[id];
+        if(Object.keys(data).length === 0){
+            html = "<div style='text-align:center;color:#999;padding:20px'>لا يوجد مستخدمين مسجلين</div>";
+        } else {
+            for(let id in data){
+                const u = data[id];
+                const roleClass = u.role.toLowerCase();
+                
+                html += `
+                <div class="user-card" data-role="${u.role}">
+                    <div class="user-header">
+                        <div>
+                            <div class="user-name">${u.username}</div>
+                            <span class="badge ${roleClass}">${translateRole(u.role)}</span>
+                        </div>
+                    </div>
 
-    html += `
-    <div class="user">
-      <b>${u.username}</b> - ${u.role}
+                    <div class="user-actions">
+                        <input id="pass-${id}" class="pass-input-mini" type="text" placeholder="كلمة سر جديدة...">
+                        <div class="actions-row">
+                            <button class="btn-sm btn-pass" onclick="changePass('${id}')">
+                                <i class="fas fa-key"></i> تغيير
+                            </button>
+                            <button class="btn-sm btn-del" onclick="deleteUser('${id}')">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+        }
+        listContainer.innerHTML = html;
+    });
 
-      <input id="pass-${id}" placeholder="كلمة سر جديدة">
+    // إضافة مستخدم
+    window.addUser = function(){
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const role = document.getElementById("role").value;
 
-      <button class="edit" onclick="changePass('${id}')">تغيير كلمة السر</button>
-      <button class="delete" onclick="deleteUser('${id}')">حذف</button>
-    </div>
-    `;
-  }
+        if(!username || !password){
+            alert("⚠️ يرجى ملء جميع الحقول");
+            return;
+        }
 
-  document.getElementById("list").innerHTML = html;
-});
+        push(ref(db,'users'),{
+            username,
+            password,
+            role,
+            createdAt: new Date().toISOString()
+        }).then(() => {
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            alert("✅ تمت إضافة المستخدم بنجاح");
+        }).catch(err => alert("خطأ: " + err.message));
+    }
 
-// إضافة مستخدم
-window.addUser = function(){
+    // حذف مستخدم
+    window.deleteUser = function(id){
+        if(confirm("هل أنت متأكد من حذف هذا المستخدم نهائياً؟")){
+            remove(ref(db,'users/'+id));
+        }
+    }
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+    // تغيير كلمة السر
+    window.changePass = function(id){
+        const input = document.getElementById("pass-"+id);
+        const newPass = input.value.trim();
 
-  if(!username || !password){
-    alert("املأ الحقول");
-    return;
-  }
+        if(!newPass){
+            alert("يرجى كتابة كلمة المرور الجديدة في الحقل الصغير بجانب الزر");
+            return;
+        }
 
-  push(ref(db,'users'),{
-    username,
-    password,
-    role
-  });
+        update(ref(db,'users/'+id),{ password: newPass }).then(() => {
+            input.value = "";
+            alert("✅ تم تحديث كلمة المرور");
+        });
+    }
 
-  alert("تمت الإضافة");
-}
-
-// حذف
-window.deleteUser = function(id){
-  if(confirm("متأكد؟")){
-    remove(ref(db,'users/'+id));
-  }
-}
-
-// تغيير كلمة السر
-window.changePass = function(id){
-
-  const newPass = document.getElementById("pass-"+id).value;
-
-  if(!newPass){
-    alert("اكتب كلمة سر");
-    return;
-  }
-
-  update(ref(db,'users/'+id),{
-    password: newPass
-  });
-
-  alert("تم التغيير");
-}
-
+    function translateRole(r){
+        const map = {'admin':'مدير','operator':'مثبت','accountant':'محاسب'};
+        return map[r] || r;
+    }
 </script>
 
 </body>
