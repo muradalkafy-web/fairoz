@@ -347,7 +347,7 @@
         // حالة العرض الحالية
         const statusColors = {
             "new": "#95a5a6", "called": "#2196f3", "appointment": "#ff9800",
-            "visited": "#9c27b0", "deal": "#4caf50", "reject": "#f44336", "pending": "#607d8b"
+            "visited": "#9c27b0", "deal": "#4caf50", "reject": "#f44336", "pending": "#607d8b","phone_issue": "#e91e63"
         };
         const stColor = statusColors[s.status] || "#333";
         const stText = translate(s.status);
@@ -394,8 +394,17 @@
                 <button class="btn-status bg-appt" onclick="updateStatus('appointment')"><i class="fas fa-calendar-check"></i> موعد</button>
                 <button class="btn-status bg-visit" onclick="updateStatus('visited')"><i class="fas fa-car"></i> زيارة</button>
                 <button class="btn-status bg-deal" onclick="updateStatus('deal')"><i class="fas fa-handshake"></i> اتفاق</button>
-                <button class="btn-status bg-reject" onclick="updateStatus('reject')"><i class="fas fa-times-circle"></i> رفض</button>
-                <button class="btn-status bg-pending" onclick="updateStatus('pending')"><i class="fas fa-clock"></i> انتظار</button>
+            <button class="btn-status bg-reject" onclick="updateStatus('reject')">
+  <i class="fas fa-times-circle"></i> رفض
+</button>
+
+<button class="btn-status bg-pending" onclick="updateStatus('pending')">
+  <i class="fas fa-clock"></i> انتظار
+</button>
+
+<button class="btn-status bg-reject" onclick="updateStatus('phone_issue')">
+  <i class="fas fa-mobile-alt"></i> مشكلة الهاتف
+</button>
             </div>
 
             ${!isEditMode ? `
@@ -505,6 +514,7 @@
         const map = {
             "new":"إضافة جديدة", "called":"تم الاتصال", "appointment":"تحديد موعد",
             "visited":"تمت الزيارة", "deal":"تم الاتفاق", "reject":"مرفوض", "pending":"انتظار"
+            ,"phone_issue":"مشكلة الهاتف"
         };
         return map[s] || s;
     }

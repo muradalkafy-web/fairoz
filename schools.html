@@ -26,6 +26,7 @@
         --st-deal: #2ecc71; 
         --st-reject: #e74c3c;
         --st-pending: #34495e;
+        --st-phone: #e91e63;
     }
 
     body {
@@ -205,6 +206,7 @@
     .card[data-status="deal"] { border-right-color: var(--st-deal); }
     .card[data-status="reject"] { border-right-color: var(--st-reject); }
     .card[data-status="pending"] { border-right-color: var(--st-pending); }
+    .card[data-status="phone_issue"] { border-right-color: var(--st-phone); }
 
     .card.selected {
         background: #e8f5e9;
@@ -303,6 +305,7 @@
         <button class="filter-chip" onclick="setFilter('deal', this)">اتفاق</button>
         <button class="filter-chip" onclick="setFilter('reject', this)">رفض</button>
         <button class="filter-chip" onclick="setFilter('pending', this)">انتظار</button>
+        <button class="filter-chip" onclick="setFilter('phone_issue', this)">مشكلة الهاتف</button>
     </div>
 </div>
 
@@ -411,7 +414,7 @@
         const container = document.getElementById("listContainer");
         
         // تصفير العدادات
-        let counts = { total:0, called:0, appointment:0, visited:0, deal:0 };
+let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:0 };
         container.innerHTML = "";
 
         // تبديل كلاس الجسم لوضع الحذف
@@ -637,15 +640,15 @@
 };
 
     function translate(s){
-        const m = {"new":"جديدة","called":"تم الاتصال","appointment":"موعد","visited":"زيارة","deal":"اتفاق","reject":"مرفوض","pending":"انتظار"};
+        const m = {"new":"جديدة","called":"تم الاتصال","appointment":"موعد","visited":"زيارة","deal":"اتفاق","reject":"مرفوض","pending":"انتظار","phone_issue":"مشكلة الهاتف"};
         return m[s]||s;
     }
     function getColor(s){
-        const m = {"new":"#95a5a6","called":"#3498db","appointment":"#f39c12","visited":"#9b59b6","deal":"#2ecc71","reject":"#e74c3c","pending":"#34495e"};
+        const m = {"new":"#95a5a6","called":"#3498db","appointment":"#f39c12","visited":"#9b59b6","deal":"#2ecc71","reject":"#e74c3c","pending":"#34495e","phone_issue":"#e91e63"};
         return m[s]||"#333";
     }
     function getIcon(s){
-        const m = {"new":"fa-star","called":"fa-phone","appointment":"fa-calendar-check","visited":"fa-car","deal":"fa-handshake","reject":"fa-times-circle","pending":"fa-clock"};
+        const m = {"new":"fa-star","called":"fa-phone","appointment":"fa-calendar-check","visited":"fa-car","deal":"fa-handshake","reject":"fa-times-circle","pending":"fa-clock","phone_issue":"fa-mobile-alt"};
         return m[s]||"fa-circle";
     }
 </script>
