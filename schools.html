@@ -165,6 +165,11 @@
         display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;
     }
 
+    /* ===== تنسيق خاص بحالة إخفاء التصدير ===== */
+    .export-actions.hidden {
+        display: none !important;
+    }
+
     .btn-dl {
         padding: 12px 25px; border: none; border-radius: 10px;
         font-family: 'Cairo'; font-weight: bold; cursor: pointer;
@@ -242,7 +247,7 @@
     @keyframes shake {
         0% { transform: rotate(0deg); }
         25% { transform: rotate(5deg); }
-        50% { transform: rotate(0eg); }
+        50% { transform: rotate(0deg); }
         75% { transform: rotate(-5deg); }
         100% { transform: rotate(0deg); }
     }
@@ -290,7 +295,6 @@
 <div class="controls">
     <div class="inputs-row">
         <input id="searchInput" type="text" placeholder="🔍 بحث (اسم، كود، هاتف)...">
-        <!-- تم جعل القائمة فارغة ليتم ملؤها بالجافاسكربت -->
         <select id="teamFilter">
             <option value="all">جاري تحميل الفرق...</option>
         </select>
@@ -309,8 +313,8 @@
     </div>
 </div>
 
-<!-- EXPORT -->
-<div class="export-actions">
+<!-- ===== EXPORT - يظهر فقط للأدمن (يتحكم فيه JavaScript) ===== -->
+<div class="export-actions hidden" id="exportSection">
     <button onclick="startExport('excel')" class="btn-dl dl-excel">
         <i class="fas fa-file-excel"></i> تصدير Excel
     </button>
@@ -342,18 +346,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // التحقق من الدخول
+    // ===== التحقق من الدخول =====
     const role = localStorage.getItem("role");
-    if(!role || (role !== "admin" && role !== "operator")){
+    if (!role || (role !== "admin" && role !== "operator")) {
         location.href = "index.html";
     }
+
+    // ===== إظهار قسم التصدير للأدمن فقط =====
+    if (role === "admin") {
+        document.getElementById("exportSection").classList.remove("hidden");
+    }
+    // إذا كان operator أو أي دور آخر → القسم يبقى مخفياً (hidden)
 
     // متغيرات الحالة
     let allData = {};
     let selectedIds = [];
     let isDeleteMode = false;
     
-    // 🔥 استرجاع الفلتر المحفوظ سابقاً (Persistence)
     let currentStatus = sessionStorage.getItem("firoz_status") || "all";
 
     // 1. جلب بيانات المدارس
@@ -362,15 +371,14 @@
         renderList();
     });
 
-    // 2. 🔥 جلب الفرق ديناميكياً وتحديث القائمة تلقائياً
+    // 2. جلب الفرق ديناميكياً
     onValue(ref(db, 'settings/teams'), (snap) => {
         const teams = snap.val();
         const select = document.getElementById("teamFilter");
         
-        // استرجاع الفريق المختار سابقاً
         const savedTeam = sessionStorage.getItem("firoz_team") || "all";
         
-        select.innerHTML = '<option value="all">كل الفرق</option>'; // إعادة تعيين
+        select.innerHTML = '<option value="all">كل الفرق</option>';
 
         if (teams && Array.isArray(teams)) {
             teams.forEach(team => {
@@ -381,27 +389,25 @@
             });
         } else {
             ['A', 'B'].forEach(t => {
-                 const option = document.createElement("option");
+                const option = document.createElement("option");
                 option.value = t;
                 option.textContent = `فريق ${t}`;
                 select.appendChild(option);
             });
         }
 
-        // تطبيق الفريق المحفوظ
-        if(teams.includes(savedTeam)){
+        if (teams && teams.includes(savedTeam)) {
             select.value = savedTeam;
         } else {
             select.value = "all";
             sessionStorage.setItem("firoz_team", "all");
         }
         
-        // تشغيل العرض الأولي
         renderList();
     });
 
     document.getElementById("teamFilter").onchange = function(e) {
-        sessionStorage.setItem("firoz_team", e.target.value); // حفظ اختيار الفريق
+        sessionStorage.setItem("firoz_team", e.target.value);
         renderList();
     };
     
@@ -413,34 +419,27 @@
         const teamVal = document.getElementById("teamFilter").value;
         const container = document.getElementById("listContainer");
         
-        // تصفير العدادات
-let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:0 };
+        let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:0 };
         container.innerHTML = "";
 
-        // تبديل كلاس الجسم لوضع الحذف
-        if(isDeleteMode) document.body.classList.add('mode-delete');
+        if (isDeleteMode) document.body.classList.add('mode-delete');
         else document.body.classList.remove('mode-delete');
 
-        for(let key in allData){
+        for (let key in allData) {
             const item = allData[key];
-            if(item.deleted) continue;
+            if (item.deleted) continue;
 
-            // فلترة الحالة
-            if(currentStatus !== "all" && item.status !== currentStatus) continue;
+            if (currentStatus !== "all" && item.status !== currentStatus) continue;
 
-            // فلترة البحث
             const clean = (t) => String(t||"").toLowerCase().replace(/[\s\-]/g,'');
             const q = clean(searchVal);
-            if(q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
+            if (q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
 
-            // فلترة الفريق
-            if(teamVal !== "all" && item.team !== teamVal) continue;
+            if (teamVal !== "all" && item.team !== teamVal) continue;
 
-            // تحديث العدادات (للبيانات المفلترة فقط)
             counts.total++;
-            if(counts[item.status] !== undefined) counts[item.status]++;
+            if (counts[item.status] !== undefined) counts[item.status]++;
 
-            // إنشاء البطاقة
             const el = document.createElement('div');
             el.className = `card ${selectedIds.includes(key) ? 'selected' : ''}`;
             el.dataset.status = item.status;
@@ -468,16 +467,14 @@ let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:
             container.appendChild(el);
         }
 
-        // تحديث الواجهة بالأرقام
         document.getElementById("cnt-total").innerText = counts.total;
         document.getElementById("cnt-called").innerText = counts.called;
         document.getElementById("cnt-appt").innerText = counts.appointment;
         document.getElementById("cnt-visit").innerText = counts.visited;
         document.getElementById("cnt-deal").innerText = counts.deal;
 
-        // تحديث زر الحذف
         const btn = document.getElementById("delBtn");
-        if(isDeleteMode){
+        if (isDeleteMode) {
             btn.classList.add("delete-active");
             btn.innerHTML = `<i class="fas fa-check"></i> (${selectedIds.length})`;
         } else {
@@ -485,49 +482,50 @@ let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:
             btn.innerHTML = `<i class="fas fa-trash-alt"></i>`;
         }
         
-        // تحديث شكل أزرار الفلتر لتطابق الحالة المحفوظة
         updateFilterButtonsUI();
     }
     
-    // دالة لتحديث شكل الأزرار بناءً على الفلتر النشط
     function updateFilterButtonsUI() {
         document.querySelectorAll(".filter-chip").forEach(btn => {
             btn.classList.remove("active");
-            // التحقق مما إذا كان الزر يمثل الحالة الحالية
-            if(btn.getAttribute('onclick').includes(`'${currentStatus}'`)) {
+            if (btn.getAttribute('onclick').includes(`'${currentStatus}'`)) {
                 btn.classList.add("active");
             }
         });
     }
 
-    // --- منطق التصدير الذكي ---
-    window.startExport = function(type){
+    // --- منطق التصدير (للأدمن فقط) ---
+    window.startExport = function(type) {
+        // ===== حماية إضافية: التحقق من الدور قبل التنفيذ =====
+        if (localStorage.getItem("role") !== "admin") {
+            alert("⛔ هذه الميزة متاحة للمدير فقط");
+            return;
+        }
+
         const searchVal = document.getElementById("searchInput").value.toLowerCase().trim();
         const teamVal = document.getElementById("teamFilter").value;
         const clean = (t) => String(t||"").toLowerCase().replace(/[\s\-]/g,'');
         const q = clean(searchVal);
 
         let rows = [];
-        const showHistory = true; 
 
-        for(let key in allData){
+        for (let key in allData) {
             const item = allData[key];
-            if(item.deleted) continue;
-            if(currentStatus !== "all" && item.status !== currentStatus) continue;
-            
-            if(q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
-            if(teamVal !== "all" && item.team !== teamVal) continue;
+            if (item.deleted) continue;
+            if (currentStatus !== "all" && item.status !== currentStatus) continue;
+            if (q && !clean(item.name).includes(q) && !clean(item.code).includes(q) && !clean(item.phone1||item.phone).includes(q)) continue;
+            if (teamVal !== "all" && item.team !== teamVal) continue;
 
             let historyText = "";
-            if(showHistory && item.history){
+            if (item.history) {
                 Object.values(item.history).forEach(h => {
                     historyText += `[${h.time}] ${h.user || 'النظام'}: ${h.action}`;
-                    if(h.note) historyText += ` (${h.note})`;
+                    if (h.note) historyText += ` (${h.note})`;
                     historyText += "\n";
                 });
             }
 
-            let rowObj = {
+            rows.push({
                 "الكود": item.code || key,
                 "المدرسة": item.name || "",
                 "الهاتف": item.phone1 || item.phone || "",
@@ -536,31 +534,27 @@ let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:
                 "العنوان": item.address || "",
                 "الحالة": translate(item.status),
                 "سجل العمليات الكامل": historyText
-            };
-
-            rows.push(rowObj);
+            });
         }
 
-        if(rows.length === 0){ alert("لا توجد بيانات للتصدير!"); return; }
+        if (rows.length === 0) { alert("لا توجد بيانات للتصدير!"); return; }
 
-        if(type === 'excel') doExcel(rows, true);
-        else doWord(rows, true);
+        if (type === 'excel') doExcel(rows);
+        else doWord(rows);
     }
 
-    function doExcel(data, withHistory){
+    function doExcel(data) {
         const ws = XLSX.utils.json_to_sheet(data);
-        let cols = [
-            {wch:10}, {wch:30}, {wch:15}, {wch:15}, {wch:10}, {wch:30}, {wch:15}
+        ws['!cols'] = [
+            {wch:10}, {wch:30}, {wch:15}, {wch:15},
+            {wch:10}, {wch:30}, {wch:15}, {wch:80}
         ];
-        if(withHistory) cols.push({wch:80});
-        ws['!cols'] = cols;
-
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Report");
         XLSX.writeFile(wb, `Firoz_Report_${Date.now()}.xlsx`);
     }
 
-    async function doWord(data, withHistory){
+    async function doWord(data) {
         const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, HeadingLevel, AlignmentType } = docx;
         
         const headers = Object.keys(data[0]);
@@ -600,22 +594,21 @@ let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:
 
     // --- وظائف مساعدة ---
 
-    window.setFilter = function(status, btn){
+    window.setFilter = function(status, btn) {
         currentStatus = status;
-        sessionStorage.setItem("firoz_status", status); // 🔥 حفظ الحالة في الذاكرة
-        
-        document.querySelectorAll(".filter-chip").forEach(b=>b.classList.remove("active"));
+        sessionStorage.setItem("firoz_status", status);
+        document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         renderList();
     }
 
-    window.toggleDeleteMode = function(){
-        if(!isDeleteMode){
+    window.toggleDeleteMode = function() {
+        if (!isDeleteMode) {
             isDeleteMode = true;
             selectedIds = [];
         } else {
-            if(selectedIds.length === 0) { alert("اختر عناصر أولاً"); return; }
-            if(!confirm(`حذف ${selectedIds.length} عنصر نهائياً؟`)) return;
+            if (selectedIds.length === 0) { alert("اختر عناصر أولاً"); return; }
+            if (!confirm(`حذف ${selectedIds.length} عنصر نهائياً؟`)) return;
             
             selectedIds.forEach(id => update(ref(db, `schools/${id}`), { deleted: true }));
             selectedIds = [];
@@ -624,32 +617,32 @@ let counts = { total:0, called:0, appointment:0, visited:0, deal:0, phone_issue:
         renderList();
     }
 
-    window.cardClick = function(id, e){
-        if(isDeleteMode) toggleSelect(id);
+    window.cardClick = function(id, e) {
+        if (isDeleteMode) toggleSelect(id);
         else location.href = `school-details.html?id=${id}`;
     }
 
-    window.toggleSelect = function(id){
-        if(selectedIds.includes(id)) selectedIds = selectedIds.filter(x=>x!==id);
+    window.toggleSelect = function(id) {
+        if (selectedIds.includes(id)) selectedIds = selectedIds.filter(x => x !== id);
         else selectedIds.push(id);
         renderList();
     }
 
-   window.goBack = () => {
-  location.replace("dashboard.html");
-};
+    window.goBack = () => {
+        location.replace("dashboard.html");
+    };
 
-    function translate(s){
+    function translate(s) {
         const m = {"new":"جديدة","called":"تم الاتصال","appointment":"موعد","visited":"زيارة","deal":"اتفاق","reject":"مرفوض","pending":"انتظار","phone_issue":"مشكلة الهاتف"};
-        return m[s]||s;
+        return m[s] || s;
     }
-    function getColor(s){
+    function getColor(s) {
         const m = {"new":"#95a5a6","called":"#3498db","appointment":"#f39c12","visited":"#9b59b6","deal":"#2ecc71","reject":"#e74c3c","pending":"#34495e","phone_issue":"#e91e63"};
-        return m[s]||"#333";
+        return m[s] || "#333";
     }
-    function getIcon(s){
+    function getIcon(s) {
         const m = {"new":"fa-star","called":"fa-phone","appointment":"fa-calendar-check","visited":"fa-car","deal":"fa-handshake","reject":"fa-times-circle","pending":"fa-clock","phone_issue":"fa-mobile-alt"};
-        return m[s]||"fa-circle";
+        return m[s] || "fa-circle";
     }
 </script>
 
